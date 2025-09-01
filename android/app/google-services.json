@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "431369985374",
+    "project_id": "pasar-atsiri-app",
+    "storage_bucket": "pasar-atsiri-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:431369985374:android:ce2ee42e495521f64143cf",
+        "android_client_info": {
+          "package_name": "com.example.pasaratsiri_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "431369985374-tik514obsnghnipbrekqbthicbnagn8j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.pasaratsiri_app",
+            "certificate_hash": "1457f79cf9f65721fb18db3924d58449aa8ba408"
+          }
+        },
+        {
+          "client_id": "431369985374-lg25oi2teo4k9imneqi6qhvu1u93euvm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCady5juFw6m8oALljqrHopNv2g0bO4zlk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "431369985374-lg25oi2teo4k9imneqi6qhvu1u93euvm.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "431369985374-7msldal27ulrelo9ef74q5d2u3u6ppc7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.pasaratsiriApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
