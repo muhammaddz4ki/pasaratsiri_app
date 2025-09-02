@@ -18,7 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
   final List<String> _backgroundImages = [
-    'assets/images/background.png',
+    'assets/images/bg_1.png',
     'assets/images/background2.png',
     'assets/images/background3.png',
   ];
