@@ -11,7 +11,9 @@ class AuthService {
   // Stream untuk memantau perubahan status login pengguna
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  // Fungsi untuk registrasi menggunakan Email dan Password
+  // =============================
+  // 🔹 AUTHENTIKASI EMAIL/PASSWORD
+  // =============================
   Future<String?> registerWithEmail({
     required String name,
     required String email,
@@ -35,15 +37,14 @@ class AuthService {
         'age': age,
         'createdAt': Timestamp.now(),
       });
-      return null; // Mengembalikan null jika sukses
+      return null; // sukses
     } on FirebaseAuthException catch (e) {
-      return e.message; // Mengembalikan pesan error dari Firebase
+      return e.message;
     } catch (e) {
-      return e.toString(); // Mengembalikan error umum
+      return e.toString();
     }
   }
 
-  // Fungsi untuk login menggunakan Email dan Password
   Future<String?> loginWithEmail({
     required String email,
     required String password,
@@ -63,7 +64,9 @@ class AuthService {
     }
   }
 
-  // Fungsi untuk login atau registrasi menggunakan Akun Google
+  // =============================
+  // 🔹 AUTHENTIKASI GOOGLE
+  // =============================
   Future<dynamic> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
@@ -82,13 +85,12 @@ class AuthService {
         credential,
       );
 
-      // Jika pengguna benar-benar baru, kembalikan objek User
-      // agar UI bisa mengarahkannya ke halaman pemilihan peran.
+      // Jika pengguna baru
       if (userCredential.additionalUserInfo?.isNewUser ?? false) {
-        return userCredential.user;
+        return userCredential.user; // biar UI bisa pilih role
       }
 
-      // Jika pengguna sudah ada (login biasa), kembalikan null (sukses)
+      // Jika pengguna sudah ada
       return null;
     } on FirebaseAuthException catch (e) {
       return e.message;
@@ -97,7 +99,6 @@ class AuthService {
     }
   }
 
-  // Fungsi untuk membuat dokumen pengguna di Firestore setelah daftar via Google
   Future<String?> createUserDocumentFromGoogleSignIn({
     required User user,
     required String role,
@@ -106,15 +107,14 @@ class AuthService {
       String uid = user.uid;
       final userDocRef = _firestore.collection('users').doc(uid);
 
-      // Set data pengguna baru
       await userDocRef.set({
         'uid': uid,
         'name': user.displayName ?? 'Pengguna Google',
         'email': user.email,
         'phoneNumber': user.phoneNumber ?? '',
-        'role': role, // Ambil peran dari pilihan pengguna
+        'role': role,
         'createdAt': Timestamp.now(),
-        'age': null, // Umur tidak didapat dari Google, bisa diisi nanti
+        'age': null,
       });
       return null;
     } catch (e) {
@@ -122,7 +122,9 @@ class AuthService {
     }
   }
 
-  // Fungsi untuk mengambil data user yang sedang login
+  // =============================
+  // 🔹 USER DATA
+  // =============================
   Future<Map<String, dynamic>?> getCurrentUserData() async {
     User? user = _auth.currentUser;
     if (user != null) {
@@ -140,7 +142,48 @@ class AuthService {
     return null;
   }
 
-  // Fungsi untuk Logout
+  Future<String?> getCurrentUserRole() async {
+    User? user = _auth.currentUser;
+    if (user == null) return null;
+
+    try {
+      DocumentSnapshot doc = await _firestore
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      if (doc.exists) {
+        return doc['role'] as String?;
+      }
+    } catch (e) {
+      debugPrint("Error fetching user role: $e");
+    }
+    return null;
+  }
+
+  // =============================
+  // 🔹 TRAINING REGISTRATION
+  // =============================
+  Future<String?> daftarPelatihan(String trainingId) async {
+    User? user = _auth.currentUser;
+    if (user == null) return "User belum login";
+
+    try {
+      await _firestore
+          .collection("trainings")
+          .doc(trainingId)
+          .collection("registrants")
+          .doc(user.uid) // <- sesuai rules Firestore
+          .set({"userId": user.uid, "createdAt": FieldValue.serverTimestamp()});
+
+      return null; // sukses
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  // =============================
+  // 🔹 LOGOUT
+  // =============================
   Future<void> signOut() async {
     try {
       await _googleSignIn.signOut();

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pasaratsiri_app/features/auth/services/auth_service.dart'; // <-- SESUAIKAN PATH INI
+import 'package:pasaratsiri_app/features/distiller/screens/distillation_input_screen.dart'; // <-- IMPORT
+import 'package:pasaratsiri_app/features/distiller/screens/product_distribution_screen.dart'; // <-- IMPORT
+import 'package:pasaratsiri_app/features/distiller/screens/product_quality_screen.dart'; // <-- IMPORT
 
 class UnitPenyulinganDashboard extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -17,14 +20,12 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard> {
   @override
   void initState() {
     super.initState();
-    // Inisialisasi daftar halaman yang akan ditampilkan
     _pages = <Widget>[
-      _buildHomeScreen(), // Halaman Home (Indeks 0)
-      _buildProfileScreen(), // Halaman Profil (Indeks 1)
+      _buildHomeScreen(context), // Halaman Home (Indeks 0)
+      _buildProfileScreen(context), // Halaman Profil (Indeks 1)
     ];
   }
 
-  // Fungsi untuk mengubah halaman saat item di navigasi bawah diklik
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -34,72 +35,101 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       // Sembunyikan AppBar jika sedang di halaman profil
       appBar: _selectedIndex != 1
           ? AppBar(
               title: const Text("Dashboard Penyulingan"),
               centerTitle: true,
               automaticallyImplyLeading: false,
+              backgroundColor: Colors.green[800],
+              foregroundColor: Colors.white,
+              elevation: 2,
             )
           : null,
-      // Tampilkan halaman sesuai dengan indeks yang dipilih
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.green,
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: Colors.green[800],
+        unselectedItemColor: Colors.grey[600],
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: "Profil",
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profil"),
         ],
       ),
     );
   }
 
-  // --- WIDGET UNTUK KONTEN HALAMAN HOME ---
-  Widget _buildHomeScreen() {
+  // --- WIDGET UNTUK KONTEN HALAMAN HOME (VERSI BARU) ---
+  Widget _buildHomeScreen(BuildContext context) {
     return SingleChildScrollView(
-      // Tambahkan SingleChildScrollView agar bisa di-scroll
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Dashboard Unit Penyulingan',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              'Selamat Datang,',
+              style: TextStyle(fontSize: 18, color: Colors.grey[700]),
             ),
-            SizedBox(height: 8),
-            Text('Selamat datang, ${widget.userData['name'] ?? ''}'),
-            SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () {
-                // TODO: Tambahkan navigasi ke halaman stok
-              },
-              icon: Icon(Icons.inventory_2_outlined),
-              label: Text('Lihat Stok Bahan Baku'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
-              ),
+            Text(
+              widget.userData['name'] ?? 'Pengguna',
+              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 12),
-            ElevatedButton.icon(
-              onPressed: () {
-                // TODO: Tambahkan navigasi ke halaman produksi
+            const SizedBox(height: 24),
+            const Text(
+              'Menu Utama',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 16),
+            _buildFeatureCard(
+              context: context,
+              icon: Icons.add_chart,
+              title: 'Input Penyulingan',
+              subtitle: 'Catat proses & hasil penyulingan baru.',
+              color: Colors.green,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DistillationInputScreen(),
+                  ),
+                );
               },
-              icon: Icon(Icons.science_outlined),
-              label: Text('Kelola Proses Produksi'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
-              ),
+            ),
+            const SizedBox(height: 12),
+            _buildFeatureCard(
+              context: context,
+              icon: Icons.verified_user_outlined,
+              title: 'Manajemen Mutu Produk',
+              subtitle: 'Upload hasil uji lab & lihat status verifikasi.',
+              color: Colors.blue,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProductQualityScreen(),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 12),
+            _buildFeatureCard(
+              context: context,
+              icon: Icons.local_shipping_outlined,
+              title: 'Distribusi Produk',
+              subtitle: 'Atur batch minyak yang siap untuk dijual.',
+              color: Colors.orange,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProductDistributionScreen(),
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -107,13 +137,67 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard> {
     );
   }
 
-  // --- WIDGET UNTUK KONTEN HALAMAN PROFIL (DENGAN LOGOUT) ---
-  Widget _buildProfileScreen() {
+  // Helper widget untuk membuat kartu fitur yang modern
+  Widget _buildFeatureCard({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      elevation: 2.0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(15),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: color.withOpacity(0.1),
+                child: Icon(icon, size: 30, color: color),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: Colors.grey),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --- WIDGET UNTUK KONTEN HALAMAN PROFIL (TETAP SAMA) ---
+  Widget _buildProfileScreen(BuildContext context) {
+    // Anda bisa menggunakan kode _buildProfileScreen dari file lama Anda.
+    // Kode di bawah ini adalah salinannya.
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center, // Pusatkan konten
-        crossAxisAlignment: CrossAxisAlignment.stretch, // Lebarkan tombol
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           CircleAvatar(
             radius: 50,
@@ -140,7 +224,7 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard> {
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 15),
               backgroundColor: Colors.red,
-              foregroundColor: Colors.white, // warna teks dan ikon
+              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -151,7 +235,7 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard> {
     );
   }
 
-  // --- FUNGSI UNTUK MENAMPILKAN DIALOG KONFIRMASI LOGOUT ---
+  // --- FUNGSI DIALOG LOGOUT (TETAP SAMA) ---
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -166,8 +250,8 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard> {
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(ctx).pop(); // Tutup dialog
-                _logout(); // Panggil fungsi logout yang benar
+                Navigator.of(ctx).pop();
+                _logout();
               },
               child: const Text('Logout', style: TextStyle(color: Colors.red)),
             ),
@@ -177,10 +261,8 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard> {
     );
   }
 
-  // --- FUNGSI LOGOUT YANG BENAR (MEMANGGIL AUTHSERVICE) ---
+  // --- FUNGSI LOGOUT (TETAP SAMA) ---
   Future<void> _logout() async {
-    // Ini akan menghapus sesi login dari Firebase
     await AuthService().signOut();
-    // AuthWrapper akan otomatis mengarahkan ke halaman login setelah ini
   }
 }

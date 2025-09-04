@@ -1,51 +1,98 @@
-import 'dart:io';
+// lib/features/farmer/services/product_service.dart
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-// Kita belum butuh firebase_storage di sini untuk sementara
+import 'package:pasaratsiri_app/features/farmer/models/product_model.dart';
 
 class ProductService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Fungsi placeholder untuk menambah produk
+  User? getCurrentUser() {
+    return _auth.currentUser;
+  }
+
+  // UBAH FUNGSI addProduct UNTUK MENERIMA STRING imageUrl
   Future<String?> addProduct({
     required String name,
     required double price,
     required String description,
     required String weight,
-    required File imageFile,
+    required String imageUrl, // <- Diubah dari File ke String
   }) async {
     try {
-      User? currentUser = _auth.currentUser;
+      User? currentUser = getCurrentUser();
       if (currentUser == null) {
         return "Anda harus login untuk menambah produk.";
       }
 
-      // --- LOGIKA UPLOAD DUMMY ---
-      // Di sini seharusnya ada logika untuk upload gambar ke Firebase Storage.
-      // Untuk sekarang, kita anggap upload berhasil dan pakai URL placeholder.
-      print('--- Simulasi Upload ---');
-      print('Gambar yang dipilih: ${imageFile.path}');
-      print('Ukuran: ${(imageFile.lengthSync() / 1024).toStringAsFixed(2)} KB');
-
-      String dummyImageUrl =
-          "https://firebasestorage.googleapis.com/v0/b/pasarabidin.appspot.com/o/sayur.png?alt=media&token=e8557b7b-9e32-498c-87d3-35f922784013"; // Contoh URL gambar
-
-      // Simpan data produk ke Firestore dengan URL dummy
+      // Simpan data produk ke Firestore dengan URL yang diinput manual
       await _firestore.collection('products').add({
         'name': name,
         'price': price,
         'description': description,
-        'imageUrl': dummyImageUrl,
+        'imageUrl': imageUrl, // <- Gunakan imageUrl dari parameter
         'weight': weight,
         'sellerId': currentUser.uid,
         'sellerName': currentUser.displayName ?? 'Petani',
         'createdAt': Timestamp.now(),
       });
 
-      return null; // Anggap sukses
+      return null; // Sukses
+    } on FirebaseException catch (e) {
+      return e.message ?? "Terjadi kesalahan Firestore.";
     } catch (e) {
       return e.toString();
+    }
+  }
+
+  Stream<List<Product>> getProductsByFarmer() {
+    final user = getCurrentUser();
+    if (user == null) {
+      return Stream.value([]);
+    }
+
+    return _firestore
+        .collection('products')
+        .where('sellerId', isEqualTo: user.uid)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs
+              .map((doc) => Product.fromFirestore(doc))
+              .toList();
+        });
+  }
+
+  Future<String?> updateProduct({
+    required String productId,
+    required String name,
+    required double price,
+    required String description,
+    required String weight,
+    required String imageUrl,
+  }) async {
+    try {
+      await _firestore.collection('products').doc(productId).update({
+        'name': name,
+        'price': price,
+        'description': description,
+        'weight': weight,
+        'imageUrl': imageUrl,
+      });
+      return null;
+    } on FirebaseException catch (e) {
+      return e.message ?? "Terjadi kesalahan saat update.";
+    }
+  }
+
+  // --- FUNGSI BARU: HAPUS PRODUK ---
+  Future<String?> deleteProduct(String productId) async {
+    try {
+      await _firestore.collection('products').doc(productId).delete();
+      return null;
+    } on FirebaseException catch (e) {
+      return e.message ?? "Terjadi kesalahan saat menghapus.";
     }
   }
 }

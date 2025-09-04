@@ -1,1 +1,42 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"pasar-atsiri-app","appId":"1:431369985374:android:ce2ee42e495521f64143cf","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"pasar-atsiri-app","configurations":{"android":"1:431369985374:android:ce2ee42e495521f64143cf","ios":"1:431369985374:ios:52a72b7c4c21a2b84143cf","macos":"1:431369985374:ios:52a72b7c4c21a2b84143cf","web":"1:431369985374:web:dffe97c1b6867b764143cf","windows":"1:431369985374:web:cb1929ce505a8f6f4143cf"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "pasar-atsiri-app",
+          "appId": "1:431369985374:android:ce2ee42e495521f64143cf",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "pasar-atsiri-app",
+          "configurations": {
+            "android": "1:431369985374:android:ce2ee42e495521f64143cf",
+            "ios": "1:431369985374:ios:52a72b7c4c21a2b84143cf",
+            "macos": "1:431369985374:ios:52a72b7c4c21a2b84143cf",
+            "web": "1:431369985374:web:dffe97c1b6867b764143cf",
+            "windows": "1:431369985374:web:cb1929ce505a8f6f4143cf"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint",
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ]
+    }
+  ]
+}

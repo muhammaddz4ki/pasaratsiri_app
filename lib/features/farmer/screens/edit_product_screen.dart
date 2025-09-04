@@ -1,38 +1,54 @@
-// lib/features/farmer/screens/add_product_screen.dart
+// lib/features/farmer/screens/edit_product_screen.dart
 
 import 'package:flutter/material.dart';
-import '../services/product_service.dart';
+import 'package:pasaratsiri_app/features/farmer/models/product_model.dart';
+import 'package:pasaratsiri_app/features/farmer/services/product_service.dart';
 
-class AddProductScreen extends StatefulWidget {
-  const AddProductScreen({super.key});
+class EditProductScreen extends StatefulWidget {
+  final Product product;
+  const EditProductScreen({super.key, required this.product});
 
   @override
-  State<AddProductScreen> createState() => _AddProductScreenState();
+  State<EditProductScreen> createState() => _EditProductScreenState();
 }
 
-class _AddProductScreenState extends State<AddProductScreen> {
+class _EditProductScreenState extends State<EditProductScreen> {
   final _formKey = GlobalKey<FormState>();
   final ProductService _productService = ProductService();
 
-  final _nameController = TextEditingController();
-  final _priceController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _weightController = TextEditingController();
-  // TAMBAHKAN CONTROLLER BARU UNTUK LINK GAMBAR
-  final _imageUrlController = TextEditingController();
+  late TextEditingController _nameController;
+  late TextEditingController _priceController;
+  late TextEditingController _descriptionController;
+  late TextEditingController _weightController;
+  late TextEditingController _imageUrlController;
 
   bool _isLoading = false;
 
-  void _submitProduct() async {
+  @override
+  void initState() {
+    super.initState();
+    // Isi controller dengan data produk yang ada
+    _nameController = TextEditingController(text: widget.product.name);
+    _priceController = TextEditingController(
+      text: widget.product.price.toStringAsFixed(0),
+    );
+    _descriptionController = TextEditingController(
+      text: widget.product.description,
+    );
+    _weightController = TextEditingController(text: widget.product.weight);
+    _imageUrlController = TextEditingController(text: widget.product.imageUrl);
+  }
+
+  void _updateProduct() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
-      final String? error = await _productService.addProduct(
+      final String? error = await _productService.updateProduct(
+        productId: widget.product.id,
         name: _nameController.text,
         price: double.tryParse(_priceController.text) ?? 0.0,
         description: _descriptionController.text,
         weight: _weightController.text,
-        // KIRIM LINK GAMBAR DARI TEXTFIELD
         imageUrl: _imageUrlController.text,
       );
 
@@ -43,7 +59,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               backgroundColor: Colors.green,
-              content: Text('Produk berhasil ditambahkan!'),
+              content: Text('Produk berhasil diperbarui!'),
             ),
           );
           Navigator.pop(context);
@@ -59,7 +75,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tambah Produk Baru')),
+      appBar: AppBar(title: const Text('Edit Produk')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Form(
@@ -67,23 +83,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // GANTI WIDGET GAMBAR DENGAN TEXTFIELD UNTUK LINK
               TextFormField(
                 controller: _imageUrlController,
                 decoration: const InputDecoration(
                   labelText: 'Link Gambar Produk',
-                  hintText: 'Contoh: https://i.ibb.co/gambar.jpg',
                   border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.link),
                 ),
-                keyboardType: TextInputType.url,
-                validator: (v) {
-                  if (v!.isEmpty) return 'Link gambar tidak boleh kosong';
-                  if (!v.startsWith('http')) return 'Link harus valid (diawali http/https)';
-                  return null;
-                },
+                validator: (v) => v!.isEmpty ? 'Link tidak boleh kosong' : null,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
@@ -101,16 +109,18 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   prefixText: 'Rp ',
                 ),
                 keyboardType: TextInputType.number,
-                validator: (v) => v!.isEmpty ? 'Harga tidak boleh kosong' : null,
+                validator: (v) =>
+                    v!.isEmpty ? 'Harga tidak boleh kosong' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _weightController,
                 decoration: const InputDecoration(
-                  labelText: 'Berat (contoh: 200 ML)',
+                  labelText: 'Berat',
                   border: OutlineInputBorder(),
                 ),
-                validator: (v) => v!.isEmpty ? 'Berat tidak boleh kosong' : null,
+                validator: (v) =>
+                    v!.isEmpty ? 'Berat tidak boleh kosong' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -120,19 +130,20 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 4,
-                validator: (v) => v!.isEmpty ? 'Deskripsi tidak boleh kosong' : null,
+                validator: (v) =>
+                    v!.isEmpty ? 'Deskripsi tidak boleh kosong' : null,
               ),
               const SizedBox(height: 32),
               _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : ElevatedButton(
-                      onPressed: _submitProduct,
+                      onPressed: _updateProduct,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
+                        backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      child: const Text('TAMBAH PRODUK'),
+                      child: const Text('SIMPAN PERUBAHAN'),
                     ),
             ],
           ),

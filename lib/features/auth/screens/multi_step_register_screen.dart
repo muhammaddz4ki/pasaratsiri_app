@@ -172,7 +172,6 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
           Row(
             children: List.generate(steps, (index) {
               final isActive = index <= _currentPageIndex;
-              final isCompleted = index < _currentPageIndex;
 
               return Expanded(
                 child: Container(

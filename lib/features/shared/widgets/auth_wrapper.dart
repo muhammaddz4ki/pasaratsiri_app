@@ -70,7 +70,7 @@ class AuthWrapper extends StatelessWidget {
             Widget dashboardPage;
             switch (role) {
               case 'petani':
-                dashboardPage = PetaniDashboard(userData: userData);
+                dashboardPage = FarmerDashboard(userData: userData);
                 break;
               case 'pembeli':
                 dashboardPage = PembeliDashboard(userData: userData);

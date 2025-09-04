@@ -45,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Logika switch diperbarui untuk semua role
     switch (role) {
       case 'petani':
-        return PetaniDashboard(userData: _userData!);
+        return FarmerDashboard(userData: _userData!);
       case 'pembeli':
         return PembeliDashboard(userData: _userData!);
       case 'penyulingan':
