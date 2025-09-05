@@ -30,6 +30,23 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
+  // Define the emerald color palette
+  final Color emeraldPrimary = const Color(0xFF10B981); // Emerald-500
+  final Color emeraldSecondary = const Color(0xFF14B8A6); // Teal-500
+  final Color emeraldDark = const Color(0xFF047857); // Emerald-700
+  final Color emeraldLight = const Color(0xFFD1FAE5); // Emerald-100
+  final Color emeraldUltraLight = const Color(0xFFECFDF5); // Emerald-50
+
+  // Define orange palette for Penyulingan
+  final Color orangePrimary = const Color(0xFFFF9800); // Orange-500
+  final Color orangeSecondary = const Color(0xFFF57C00); // Orange-700
+  final Color orangeLight = const Color(0xFFFFE0B2); // Orange-100
+
+  // Define blue palette for Pemerintah
+  final Color bluePrimary = const Color(0xFF2196F3); // Blue-500
+  final Color blueSecondary = const Color(0xFF1976D2); // Blue-700
+  final Color blueLight = const Color(0xFFBBDEFB); // Blue-100
+
   @override
   void initState() {
     super.initState();
@@ -109,7 +126,7 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
         // Jika registrasi sukses, tampilkan pesan
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            backgroundColor: Colors.green.shade700,
+            backgroundColor: _getPrimaryColor(),
             content: const Text(
               'Registrasi Berhasil! Silakan Login.',
               style: TextStyle(fontWeight: FontWeight.w500),
@@ -163,8 +180,26 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
     }
   }
 
+  // Fungsi untuk mendapatkan warna utama berdasarkan role
+  Color _getPrimaryColor() {
+    final role = _registrationData['role'];
+    if (role == 'penyulingan') return orangePrimary;
+    if (role == 'pemerintah') return bluePrimary;
+    return emeraldPrimary;
+  }
+
+  // Fungsi untuk mendapatkan warna sekunder berdasarkan role
+  Color _getSecondaryColor() {
+    final role = _registrationData['role'];
+    if (role == 'penyulingan') return orangeSecondary;
+    if (role == 'pemerintah') return blueSecondary;
+    return emeraldSecondary;
+  }
+
   Widget _buildProgressIndicator() {
     const steps = 4;
+    final primaryColor = _getPrimaryColor();
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Column(
@@ -181,9 +216,7 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
                     height: 6,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(3),
-                      color: isActive
-                          ? Colors.green.shade700
-                          : Colors.grey.shade300,
+                      color: isActive ? primaryColor : Colors.grey.shade300,
                     ),
                   ),
                 ),
@@ -196,7 +229,7 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Colors.green.shade700,
+              color: primaryColor,
             ),
           ),
         ],
@@ -208,6 +241,10 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
   Widget build(BuildContext context) {
     _registrationData['role'] =
         ModalRoute.of(context)!.settings.arguments as String;
+
+    // Tentukan warna utama berdasarkan role
+    final Color primaryColor = _getPrimaryColor();
+    final Color secondaryColor = _getSecondaryColor();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -235,11 +272,11 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.green.shade700,
+                        color: primaryColor,
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.green.shade700.withOpacity(0.3),
+                            color: primaryColor.withOpacity(0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -250,12 +287,12 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                     ),
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'PasarAtsiri',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.green,
+                          color: primaryColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 20,
                         ),
@@ -266,15 +303,12 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.green.shade700,
-                          width: 1.5,
-                        ),
+                        border: Border.all(color: primaryColor, width: 1.5),
                       ),
                       child: Image.asset(
                         'assets/images/logo.png',
                         height: 24,
-                        color: Colors.green.shade700,
+                        color: primaryColor,
                       ),
                     ),
                   ],
@@ -304,12 +338,16 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
                     title: "Buat Akun",
                     subtitle: "Masukkan email dan password Anda",
                     icon: Icons.email_outlined,
+                    primaryColor: primaryColor,
+                    secondaryColor: secondaryColor,
                     formFields: [
                       _buildInputField(
+                        primaryColor: primaryColor,
                         child: TextFormField(
                           decoration: _buildInputDecoration(
                             'E-mail',
                             Icons.email_outlined,
+                            primaryColor: primaryColor,
                           ),
                           keyboardType: TextInputType.emailAddress,
                           onSaved: (value) =>
@@ -325,18 +363,20 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
                       ),
                       const SizedBox(height: 20),
                       _buildInputField(
+                        primaryColor: primaryColor,
                         child: TextFormField(
                           controller: _passwordController,
                           obscureText: !_isPasswordVisible,
                           decoration: _buildInputDecoration(
                             'Password',
                             Icons.lock_outline,
+                            primaryColor: primaryColor,
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _isPasswordVisible
                                     ? Icons.visibility
                                     : Icons.visibility_off,
-                                color: Colors.green.shade700,
+                                color: primaryColor,
                               ),
                               onPressed: () => setState(
                                 () => _isPasswordVisible = !_isPasswordVisible,
@@ -354,17 +394,19 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
                       ),
                       const SizedBox(height: 20),
                       _buildInputField(
+                        primaryColor: primaryColor,
                         child: TextFormField(
                           obscureText: !_isConfirmPasswordVisible,
                           decoration: _buildInputDecoration(
                             'Konfirmasi Password',
                             Icons.lock_outline,
+                            primaryColor: primaryColor,
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _isConfirmPasswordVisible
                                     ? Icons.visibility
                                     : Icons.visibility_off,
-                                color: Colors.green.shade700,
+                                color: primaryColor,
                               ),
                               onPressed: () => setState(
                                 () => _isConfirmPasswordVisible =
@@ -389,12 +431,16 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
                     title: 'Identitas',
                     subtitle: "Siapa nama Anda?",
                     icon: Icons.person_outline,
+                    primaryColor: primaryColor,
+                    secondaryColor: secondaryColor,
                     formFields: [
                       _buildInputField(
+                        primaryColor: primaryColor,
                         child: TextFormField(
                           decoration: _buildInputDecoration(
                             'Nama Lengkap',
                             Icons.person_outline,
+                            primaryColor: primaryColor,
                           ),
                           onSaved: (value) => _registrationData['name'] = value,
                           validator: (value) =>
@@ -411,12 +457,16 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
                     title: 'Kontak',
                     subtitle: 'Masukkan nomor telepon Anda',
                     icon: Icons.phone_outlined,
+                    primaryColor: primaryColor,
+                    secondaryColor: secondaryColor,
                     formFields: [
                       _buildInputField(
+                        primaryColor: primaryColor,
                         child: TextFormField(
                           decoration: _buildInputDecoration(
                             'Nomor Telepon',
                             Icons.phone_outlined,
+                            primaryColor: primaryColor,
                             prefixText: '+62 ',
                           ),
                           keyboardType: TextInputType.phone,
@@ -437,12 +487,16 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
                     title: 'Informasi Pribadi',
                     subtitle: "Berapa usia Anda?",
                     icon: Icons.cake_outlined,
+                    primaryColor: primaryColor,
+                    secondaryColor: secondaryColor,
                     formFields: [
                       _buildInputField(
+                        primaryColor: primaryColor,
                         child: TextFormField(
                           decoration: _buildInputDecoration(
                             'Usia',
                             Icons.cake_outlined,
+                            primaryColor: primaryColor,
                             suffixText: 'tahun',
                           ),
                           keyboardType: TextInputType.number,
@@ -467,6 +521,7 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
   InputDecoration _buildInputDecoration(
     String label,
     IconData icon, {
+    required Color primaryColor,
     Widget? suffixIcon,
     String? prefixText,
     String? suffixText,
@@ -474,7 +529,7 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
     return InputDecoration(
       labelText: label,
       labelStyle: TextStyle(color: Colors.grey.shade600),
-      prefixIcon: Icon(icon, color: Colors.green.shade700),
+      prefixIcon: Icon(icon, color: primaryColor),
       suffixIcon: suffixIcon,
       prefixText: prefixText,
       suffixText: suffixText,
@@ -490,7 +545,7 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.green.shade700, width: 2),
+        borderSide: BorderSide(color: primaryColor, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -500,7 +555,10 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
     );
   }
 
-  Widget _buildInputField({required Widget child}) {
+  Widget _buildInputField({
+    required Widget child,
+    required Color primaryColor,
+  }) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
@@ -522,6 +580,8 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
     required IconData icon,
     required List<Widget> formFields,
     required VoidCallback onNext,
+    required Color primaryColor,
+    required Color secondaryColor,
     String buttonText = 'SUBMIT',
   }) {
     return FadeTransition(
@@ -540,11 +600,11 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
                 child: Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.green.shade700,
+                    color: primaryColor,
                     borderRadius: BorderRadius.circular(50),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.green.shade700.withOpacity(0.3),
+                        color: primaryColor.withOpacity(0.3),
                         blurRadius: 15,
                         offset: const Offset(0, 5),
                       ),
@@ -563,7 +623,7 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.green.shade700,
+                  color: primaryColor,
                 ),
               ),
 
@@ -608,7 +668,7 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.green.shade700.withOpacity(0.3),
+                      color: primaryColor.withOpacity(0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 5),
                     ),
@@ -618,7 +678,7 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
                     ? Container(
                         height: 56,
                         decoration: BoxDecoration(
-                          color: Colors.green.shade700,
+                          color: primaryColor,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Center(
@@ -632,7 +692,7 @@ class _MultiStepRegisterScreenState extends State<MultiStepRegisterScreen>
                         onPressed: onNext,
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 18),
-                          backgroundColor: Colors.green.shade700,
+                          backgroundColor: primaryColor,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),

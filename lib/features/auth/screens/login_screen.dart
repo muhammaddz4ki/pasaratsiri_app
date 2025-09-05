@@ -27,6 +27,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _isPasswordVisible = false;
 
+  // Define the emerald color palette
+  final Color emeraldPrimary = const Color(0xFF10B981); // Emerald-500
+  final Color emeraldSecondary = const Color(0xFF14B8A6); // Teal-500
+  final Color emeraldDark = const Color(0xFF047857); // Emerald-700
+  final Color emeraldLight = const Color(0xFFD1FAE5); // Emerald-100
+  final Color emeraldUltraLight = const Color(0xFFECFDF5); // Emerald-50
+
   @override
   void initState() {
     super.initState();
@@ -57,13 +64,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (error != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(backgroundColor: Colors.red, content: Text(error)),
+          SnackBar(
+            backgroundColor: Colors.red.shade600,
+            content: Text(error),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Terjadi kesalahan: ${e.toString()}')),
+          SnackBar(
+            backgroundColor: Colors.red.shade600,
+            content: Text('Terjadi kesalahan: ${e.toString()}'),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
         );
       }
     } finally {
@@ -90,14 +111,28 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       } else if (result is String) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(backgroundColor: Colors.red, content: Text(result)),
+          SnackBar(
+            backgroundColor: Colors.red.shade600,
+            content: Text(result),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
         );
       }
       // Jika hasilnya null, AuthWrapper akan otomatis navigasi ke dashboard.
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Terjadi kesalahan: ${e.toString()}')),
+        SnackBar(
+          backgroundColor: Colors.red.shade600,
+          content: Text('Terjadi kesalahan: ${e.toString()}'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
       );
     } finally {
       // Hentikan loading jika pengguna masih di halaman ini
@@ -152,7 +187,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: Colors.white,
                           size: 28,
                         ),
-                        Image.asset('assets/images/logo.png', height: 40),
+                        Image.asset(
+                          'assets/images/logo.png',
+                          height: 40,
+                          color: Colors.white,
+                        ),
                       ],
                     ),
                     Form(
@@ -261,7 +300,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 24),
                           _isLoading
-                              ? const Center(child: CircularProgressIndicator())
+                              ? Center(
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      emeraldPrimary,
+                                    ),
+                                  ),
+                                )
                               : Column(
                                   crossAxisAlignment:
                                       CrossAxisAlignment.stretch,
@@ -272,12 +317,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                         padding: const EdgeInsets.symmetric(
                                           vertical: 16,
                                         ),
-                                        backgroundColor: Colors.green,
+                                        backgroundColor: emeraldPrimary,
                                         foregroundColor: Colors.white,
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(
                                             12,
                                           ),
+                                        ),
+                                        elevation: 4,
+                                        shadowColor: emeraldPrimary.withOpacity(
+                                          0.3,
                                         ),
                                       ),
                                       child: const Text(
@@ -326,10 +375,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                   context,
                                   '/register-role-selection',
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'Daftar di sini',
                                   style: TextStyle(
-                                    color: Colors.greenAccent,
+                                    color: emeraldLight,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -350,11 +399,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
+                            Text(
                               'PasarAtsiri',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
+                                fontSize: 16,
                               ),
                             ),
                             TextButton(
@@ -362,9 +412,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 context,
                                 '/register-role-selection',
                               ),
-                              child: const Text(
+                              child: Text(
                                 'Daftar',
-                                style: TextStyle(color: Colors.white),
+                                style: TextStyle(
+                                  color: emeraldLight,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ],

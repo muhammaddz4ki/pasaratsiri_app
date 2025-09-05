@@ -217,13 +217,30 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Define the emerald color palette
+    const Color emeraldPrimary = Color(0xFF10B981); // Emerald-500
+    const Color emeraldSecondary = Color(0xFF14B8A6); // Teal-500
+    const Color emeraldDark = Color(0xFF047857); // Emerald-700
+    const Color emeraldLight = Color(0xFFD1FAE5); // Emerald-100
+    const Color emeraldUltraLight = Color(0xFFECFDF5); // Emerald-50
+
+    // Define orange palette for Penyulingan
+    const Color orangePrimary = Color(0xFFFF9800); // Orange-500
+    const Color orangeSecondary = Color(0xFFF57C00); // Orange-700
+    const Color orangeLight = Color(0xFFFFE0B2); // Orange-100
+
+    // Define blue palette for Pemerintah
+    const Color bluePrimary = Color(0xFF2196F3); // Blue-500
+    const Color blueSecondary = Color(0xFF1976D2); // Blue-700
+    const Color blueLight = Color(0xFFBBDEFB); // Blue-100
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.green.shade50, Colors.white, Colors.green.shade50],
+            colors: [emeraldUltraLight, Colors.white, emeraldUltraLight],
             stops: const [0.0, 0.5, 1.0],
           ),
         ),
@@ -237,10 +254,14 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                   vertical: 16,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  gradient: const LinearGradient(
+                    colors: [emeraldPrimary, emeraldSecondary],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: emeraldPrimary.withOpacity(0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 2),
                     ),
@@ -250,11 +271,11 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.green.shade50,
+                        color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.green),
+                        icon: Icon(Icons.arrow_back, color: Colors.white),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                     ),
@@ -263,7 +284,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                         'PasarAtsiri',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.green,
+                          color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 20,
                         ),
@@ -272,7 +293,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.green.shade50,
+                        color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Image.asset('assets/images/logo.png', height: 24),
@@ -299,16 +320,13 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.green.shade400,
-                                      Colors.green.shade600,
-                                    ],
+                                  gradient: const LinearGradient(
+                                    colors: [emeraldPrimary, emeraldSecondary],
                                   ),
                                   borderRadius: BorderRadius.circular(50),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.green.withOpacity(0.3),
+                                      color: emeraldPrimary.withOpacity(0.3),
                                       blurRadius: 15,
                                       offset: const Offset(0, 8),
                                     ),
@@ -327,7 +345,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                                 style: TextStyle(
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                                  color: emeraldDark,
                                 ),
                               ),
                               const SizedBox(height: 8),
@@ -336,7 +354,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: Colors.grey.shade600,
+                                  color: emeraldDark.withOpacity(0.7),
                                   height: 1.4,
                                 ),
                               ),
@@ -350,7 +368,13 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                       // Enhanced Role Cards
                       Expanded(
                         child: _isLoading
-                            ? const Center(child: CircularProgressIndicator())
+                            ? Center(
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    emeraldPrimary,
+                                  ),
+                                ),
+                              )
                             : GridView.count(
                                 crossAxisCount: 2,
                                 crossAxisSpacing: 16,
@@ -362,8 +386,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                                     subtitle: 'Jual produk langsung',
                                     icon: Icons.agriculture_outlined,
                                     roleValue: 'petani',
-                                    primaryColor: Colors.green.shade600,
-                                    accentColor: Colors.green.shade400,
+                                    primaryColor: emeraldPrimary,
+                                    accentColor: emeraldSecondary,
                                     index: 0,
                                   ),
                                   _buildRoleCard(
@@ -371,17 +395,17 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                                     subtitle: 'Beli produk',
                                     icon: Icons.shopping_bag_outlined,
                                     roleValue: 'pembeli',
-                                    primaryColor: Colors.blue.shade600,
-                                    accentColor: Colors.blue.shade400,
+                                    primaryColor: emeraldPrimary,
+                                    accentColor: emeraldSecondary,
                                     index: 1,
                                   ),
                                   _buildRoleCard(
                                     title: 'Penyulingan',
-                                    subtitle: 'distribusi',
+                                    subtitle: 'Distribusi',
                                     icon: Icons.science_outlined,
                                     roleValue: 'penyulingan',
-                                    primaryColor: Colors.orange.shade600,
-                                    accentColor: Colors.orange.shade400,
+                                    primaryColor: orangePrimary,
+                                    accentColor: orangeSecondary,
                                     index: 2,
                                   ),
                                   _buildRoleCard(
@@ -389,8 +413,10 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                                     subtitle: 'Monitor & regulasi',
                                     icon: Icons.account_balance_outlined,
                                     roleValue: 'pemerintah',
-                                    primaryColor: Colors.purple.shade600,
-                                    accentColor: Colors.purple.shade400,
+                                    primaryColor:
+                                        bluePrimary, // Changed to blue
+                                    accentColor:
+                                        blueSecondary, // Changed to blue
                                     index: 3,
                                   ),
                                 ],
@@ -437,7 +463,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                                     boxShadow: [
                                       BoxShadow(
                                         color: _selectedRole != null
-                                            ? Colors.green.withOpacity(0.3)
+                                            ? emeraldPrimary.withOpacity(0.3)
                                             : Colors.grey.withOpacity(0.2),
                                         blurRadius: 12,
                                         offset: const Offset(0, 6),
@@ -475,7 +501,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                                         vertical: 18,
                                       ),
                                       backgroundColor: _selectedRole != null
-                                          ? Colors.green.shade600
+                                          ? emeraldPrimary
                                           : Colors.grey.shade400,
                                       foregroundColor: Colors.white,
                                       elevation: 0,
