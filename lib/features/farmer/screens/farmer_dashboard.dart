@@ -19,6 +19,14 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
   bool _showNotificationScreen = false;
   late final List<Widget> _pages;
 
+  // Emerald/Teal Color Palette
+  static const Color primaryEmerald = Color(0xFF10B981); // Emerald-500
+  static const Color secondaryTeal = Color(0xFF14B8A6); // Teal-500
+  static const Color darkEmerald = Color(0xFF047857); // Emerald-700
+  static const Color lightEmerald = Color(0xFFD1FAE5); // Emerald-100
+  static const Color ultraLightEmerald = Color(0xFFECFDF5); // Emerald-50
+  static const Color mediumEmerald = Color(0xFF059669); // Emerald-600
+
   @override
   void initState() {
     super.initState();
@@ -61,15 +69,11 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Colors.green.shade800,
-              Colors.green.shade600,
-              Colors.green.shade700,
-            ],
+            colors: [primaryEmerald, mediumEmerald, darkEmerald],
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.green.shade400.withOpacity(0.3),
+              color: primaryEmerald.withOpacity(0.3),
               blurRadius: 15,
               offset: const Offset(0, 5),
             ),
@@ -171,12 +175,12 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Colors.white, Colors.green.shade50, Colors.white],
+          colors: [Colors.white, ultraLightEmerald, Colors.white],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.green.shade200.withOpacity(0.4),
+            color: lightEmerald.withOpacity(0.4),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -193,19 +197,17 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
             width: 70,
             height: 70,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.green.shade400, Colors.green.shade600],
-              ),
+              gradient: LinearGradient(colors: [primaryEmerald, mediumEmerald]),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.green.shade300.withOpacity(0.6),
+                  color: primaryEmerald.withOpacity(0.6),
                   blurRadius: 15,
                   offset: const Offset(0, 5),
                 ),
               ],
             ),
-            child: const Icon(Icons.eco, color: Colors.white, size: 35),
+            child: const Icon(Icons.agriculture, color: Colors.white, size: 35),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -226,7 +228,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Colors.green.shade800,
+                    color: darkEmerald,
                     letterSpacing: 0.3,
                   ),
                 ),
@@ -237,14 +239,14 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.green.shade100,
+                    color: lightEmerald,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     'Petani Aktif',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.green.shade700,
+                      color: darkEmerald,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -264,12 +266,12 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Colors.green.shade50, Colors.white, Colors.green.shade50],
+          colors: [ultraLightEmerald, Colors.white, ultraLightEmerald],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.green.shade200.withOpacity(0.3),
+            color: lightEmerald.withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -278,12 +280,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _summaryItem(
-            'Harga',
-            'Stabil',
-            Icons.trending_up,
-            Colors.green.shade600,
-          ),
+          _summaryItem('Harga', 'Stabil', Icons.trending_up, mediumEmerald),
           _summaryItem('Produksi', '12 Ton', Icons.eco, Colors.blue.shade600),
           _summaryItem(
             'Sertifikasi',
@@ -300,28 +297,28 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: color, size: 28),
+          child: Icon(icon, color: color, size: 20),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         Text(
           title,
           style: TextStyle(
             color: Colors.grey.shade600,
-            fontSize: 13,
+            fontSize: 11,
             fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         Text(
           value,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 16,
+            fontSize: 14,
             color: Colors.grey.shade800,
           ),
         ),
@@ -333,43 +330,56 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Aksi Cepat',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey.shade800,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+          child: Text(
+            'Akses Cepat',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade800,
+            ),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
+        // Fix overflow dengan SingleChildScrollView
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
           child: Row(
             children: [
-              _quickActionButton(
+              const SizedBox(width: 8), // Padding awal
+              _quickActionCard(
                 'Catat Panen',
                 Icons.agriculture,
-                Colors.green.shade600,
+                mediumEmerald,
                 () => _showHarvestDialog(),
               ),
-              _quickActionButton(
+              _quickActionCard(
                 'Cek Cuaca',
                 Icons.cloud,
                 Colors.blue.shade600,
                 () => _showWeatherDialog(),
               ),
-              _quickActionButton(
+              _quickActionCard(
                 'Kalkulator',
                 Icons.calculate,
                 Colors.orange.shade600,
                 () => _showCalculatorDialog(),
               ),
-              _quickActionButton(
+              _quickActionCard(
                 'Lacak Order',
                 Icons.local_shipping,
                 Colors.purple.shade600,
                 () => _showTrackingDialog(),
               ),
+              _quickActionCard(
+                'Pengingat',
+                Icons.notifications_active,
+                Colors.red.shade600,
+                () => _showReminderDialog(context),
+              ),
+              const SizedBox(width: 8), // Padding akhir
             ],
           ),
         ),
@@ -377,39 +387,56 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
     );
   }
 
-  Widget _quickActionButton(
+  Widget _quickActionCard(
     String title,
     IconData icon,
     Color color,
     VoidCallback onTap,
   ) {
     return Container(
+      width: 110,
+      height: 100,
       margin: const EdgeInsets.only(right: 12),
       child: Material(
-        borderRadius: BorderRadius.circular(15),
-        elevation: 0,
+        borderRadius: BorderRadius.circular(20),
+        elevation: 3,
+        shadowColor: color.withOpacity(0.3),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(20),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(color: color.withOpacity(0.3)),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: color.withOpacity(0.2)),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon, color: color, size: 20),
-                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: color, size: 24),
+                ),
+                const SizedBox(height: 8),
                 Text(
                   title,
+                  textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: color,
+                    color: Colors.grey.shade800,
                     fontWeight: FontWeight.w600,
-                    fontSize: 13,
+                    fontSize: 11,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -443,7 +470,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
             _buildEnhancedCard(
               icon: Icons.inventory_2_outlined,
               title: 'Produk Saya',
-              color: Colors.green.shade600,
+              color: mediumEmerald,
               onTap: () => Navigator.pushNamed(context, '/product-list'),
             ),
             _buildEnhancedCard(
@@ -467,7 +494,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
             _buildEnhancedCard(
               icon: Icons.receipt_long_outlined,
               title: 'Pesanan Masuk',
-              color: Colors.teal.shade600,
+              color: secondaryTeal,
               onTap: () {
                 Navigator.push(
                   context,
@@ -493,7 +520,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
             _buildEnhancedCard(
               icon: Icons.forum_outlined,
               title: 'Forum Diskusi',
-              color: Colors.lightBlue.shade600, // Warna baru
+              color: Colors.lightBlue.shade600,
               onTap: () {
                 Navigator.push(
                   context,
@@ -603,7 +630,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                   'Harga Minyak Atsiri Naik',
                   'Harga minyak vetiver naik 5% hari ini',
                   Icons.trending_up,
-                  Colors.green.shade600,
+                  mediumEmerald,
                   '2 jam lalu',
                 ),
                 _notificationItem(
@@ -706,13 +733,11 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.green.shade400, Colors.green.shade600],
-              ),
+              gradient: LinearGradient(colors: [primaryEmerald, mediumEmerald]),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.green.shade300.withOpacity(0.6),
+                  color: primaryEmerald.withOpacity(0.6),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -788,7 +813,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
             ),
             child: Row(
               children: [
-                Icon(icon, color: Colors.green.shade600),
+                Icon(icon, color: mediumEmerald),
                 const SizedBox(width: 16),
                 Text(
                   title,
@@ -825,7 +850,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
-            color: Colors.green.shade300.withOpacity(0.3),
+            color: primaryEmerald.withOpacity(0.3),
             blurRadius: 25,
             offset: const Offset(0, 15),
           ),
@@ -879,8 +904,8 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
           gradient: isSelected
               ? LinearGradient(
                   colors: [
-                    Colors.green.shade400.withOpacity(0.2),
-                    Colors.green.shade600.withOpacity(0.1),
+                    primaryEmerald.withOpacity(0.2),
+                    mediumEmerald.withOpacity(0.1),
                   ],
                 )
               : null,
@@ -888,7 +913,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.green.shade400.withOpacity(0.3),
+                    color: primaryEmerald.withOpacity(0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),
@@ -900,16 +925,14 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
           children: [
             Icon(
               isSelected ? activeIcon : inactiveIcon,
-              color: isSelected ? Colors.green.shade700 : Colors.grey.shade600,
+              color: isSelected ? darkEmerald : Colors.grey.shade600,
               size: 26,
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                color: isSelected
-                    ? Colors.green.shade700
-                    : Colors.grey.shade600,
+                color: isSelected ? darkEmerald : Colors.grey.shade600,
                 fontSize: isSelected ? 13 : 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 letterSpacing: 0.2,
@@ -921,43 +944,169 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
     );
   }
 
+  // IMPROVED DIALOGS
   void _showHarvestDialog() {
+    final harvestController = TextEditingController();
+    final dateController = TextEditingController();
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Catat Hasil Panen'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Jumlah (kg)',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+        elevation: 10,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(25),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.white, ultraLightEmerald],
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [primaryEmerald, mediumEmerald],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: primaryEmerald.withOpacity(0.4),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.agriculture, color: Colors.white, size: 28),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Catat Hasil Panen',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Tanggal Panen',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+              const SizedBox(height: 24),
+              TextField(
+                controller: harvestController,
+                decoration: InputDecoration(
+                  labelText: 'Jumlah Panen (kg)',
+                  prefixIcon: Icon(Icons.scale, color: primaryEmerald),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
                 ),
+                keyboardType: TextInputType.number,
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              TextField(
+                controller: dateController,
+                readOnly: true,
+                decoration: InputDecoration(
+                  labelText: 'Tanggal Panen',
+                  prefixIcon: Icon(Icons.calendar_today, color: primaryEmerald),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+                onTap: () async {
+                  final DateTime? pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime.now(),
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: ColorScheme.light(
+                            primary: primaryEmerald,
+                            onPrimary: Colors.white,
+                            surface: Colors.white,
+                          ),
+                        ),
+                        child: child!,
+                      );
+                    },
+                  );
+                  if (pickedDate != null) {
+                    dateController.text =
+                        "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+                  }
+                },
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          side: BorderSide(color: Colors.grey.shade300),
+                        ),
+                      ),
+                      child: Text(
+                        'Batal',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (harvestController.text.isNotEmpty &&
+                            dateController.text.isNotEmpty) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Data panen berhasil disimpan'),
+                              backgroundColor: mediumEmerald,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryEmerald,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        elevation: 5,
+                      ),
+                      child: Text(
+                        'Simpan',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Simpan'),
-          ),
-        ],
       ),
     );
   }
@@ -965,40 +1114,98 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
   void _showWeatherDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Prakiraan Cuaca'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.wb_sunny, color: Colors.orange, size: 40),
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Hari ini: 28°C',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      'Cerah berawan',
-                      style: TextStyle(color: Colors.grey.shade600),
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+        elevation: 10,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(25),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.white, Colors.blue.shade50],
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blue.shade600, Colors.blue.shade400],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue.shade300,
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text('Cocok untuk panen dan pengeringan akar wangi'),
-          ],
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.cloud, color: Colors.white, size: 28),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Info Cuaca Hari Ini',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Icon(Icons.wb_sunny, color: Colors.orange, size: 64),
+              const SizedBox(height: 16),
+              Text(
+                'Cerah Berawan',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade800,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Suhu: 28°C',
+                style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Kelembaban: 65%',
+                style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Curah Hujan: 0 mm',
+                style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade600,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                  child: Text('Tutup'),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -1006,49 +1213,77 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
   void _showCalculatorDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Kalkulator Keuntungan'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Jumlah Produksi (kg)',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+        elevation: 10,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(25),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.white, Colors.orange.shade50],
             ),
-            const SizedBox(height: 16),
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Harga Jual (Rp/kg)',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                'Estimasi Keuntungan: Rp 0',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Tutup'),
           ),
-          ElevatedButton(onPressed: () {}, child: const Text('Hitung')),
-        ],
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.orange.shade600, Colors.orange.shade400],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.orange.shade300,
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.calculate, color: Colors.white, size: 28),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Kalkulator Pupuk',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Fitur ini akan segera hadir!',
+                style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange.shade600,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                  child: Text('Tutup'),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1056,65 +1291,396 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
   void _showTrackingDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Lacak Pengiriman'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Nomor Resi',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                prefixIcon: Icon(Icons.search),
-              ),
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+        elevation: 10,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(25),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.white, Colors.purple.shade50],
             ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.purple.shade600, Colors.purple.shade400],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.purple.shade300,
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.local_shipping, color: Colors.white, size: 28),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Lacak Pesanan',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Fitur ini akan segera hadir!',
+                style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple.shade600,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                  child: Text('Tutup'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showReminderDialog(BuildContext context) {
+    bool isNotificationEnabled = true;
+    final reminderTypeController = TextEditingController();
+    final dateTimeController = TextEditingController();
+    final descriptionController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25),
+            ),
+            elevation: 10,
+            child: Container(
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.blue.shade200),
+                borderRadius: BorderRadius.circular(25),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Colors.white, Colors.red.shade50.withOpacity(0.3)],
+                ),
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    'Status Pengiriman:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  // Header
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.red.shade600, Colors.red.shade400],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.red.shade300,
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.notifications_active,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Atur Pengingat',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 24),
+
+                  // Reminder type dropdown
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(color: Colors.red.shade300),
+                    ),
+                    child: DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'Jenis Pengingat',
+                        prefixIcon: Icon(
+                          Icons.category,
+                          color: Colors.red.shade600,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                      ),
+                      items:
+                          [
+                            'Waktu Panen',
+                            'Penyiraman',
+                            'Pemupukan',
+                            'Pengecekan Hama',
+                            'Penyulingan',
+                            'Lainnya',
+                          ].map((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                      onChanged: (String? newValue) {
+                        reminderTypeController.text = newValue ?? '';
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Description input
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(color: Colors.red.shade300),
+                    ),
+                    child: TextField(
+                      controller: descriptionController,
+                      maxLines: 2,
+                      decoration: InputDecoration(
+                        labelText: 'Deskripsi Pengingat',
+                        prefixIcon: Icon(
+                          Icons.description,
+                          color: Colors.red.shade600,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        hintText: 'Contoh: Saatnya panen vetiver di lahan A',
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Date time input
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(color: Colors.red.shade300),
+                    ),
+                    child: TextField(
+                      controller: dateTimeController,
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: 'Tanggal & Waktu',
+                        prefixIcon: Icon(
+                          Icons.schedule,
+                          color: Colors.red.shade600,
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            Icons.calendar_today,
+                            color: Colors.red.shade600,
+                          ),
+                          onPressed: () async {
+                            final DateTime? pickedDate = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime.now(),
+                              lastDate: DateTime(2100),
+                              builder: (context, child) {
+                                return Theme(
+                                  data: Theme.of(context).copyWith(
+                                    colorScheme: ColorScheme.light(
+                                      primary: Colors.red.shade600,
+                                      onPrimary: Colors.white,
+                                      surface: Colors.white,
+                                    ),
+                                  ),
+                                  child: child!,
+                                );
+                              },
+                            );
+                            if (pickedDate != null) {
+                              final TimeOfDay? pickedTime =
+                                  await showTimePicker(
+                                    context: context,
+                                    initialTime: TimeOfDay.now(),
+                                    builder: (context, child) {
+                                      return Theme(
+                                        data: Theme.of(context).copyWith(
+                                          colorScheme: ColorScheme.light(
+                                            primary: Colors.red.shade600,
+                                            onPrimary: Colors.white,
+                                            surface: Colors.white,
+                                          ),
+                                        ),
+                                        child: child!,
+                                      );
+                                    },
+                                  );
+                              if (pickedTime != null) {
+                                final DateTime selectedDateTime = DateTime(
+                                  pickedDate.year,
+                                  pickedDate.month,
+                                  pickedDate.day,
+                                  pickedTime.hour,
+                                  pickedTime.minute,
+                                );
+                                dateTimeController.text =
+                                    "${selectedDateTime.day}/${selectedDateTime.month}/${selectedDateTime.year} ${selectedDateTime.hour}:${selectedDateTime.minute.toString().padLeft(2, '0')}";
+                              }
+                            }
+                          },
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Notification toggle
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.shade200,
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.notifications, color: Colors.red.shade600),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Aktifkan Notifikasi',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                        Switch(
+                          value: isNotificationEnabled,
+                          onChanged: (value) {
+                            setState(() {
+                              isNotificationEnabled = value;
+                            });
+                          },
+                          activeColor: Colors.red.shade600,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Action buttons
                   Row(
                     children: [
-                      Icon(
-                        Icons.local_shipping,
-                        color: Colors.blue.shade600,
-                        size: 20,
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                              side: BorderSide(color: Colors.grey.shade300),
+                            ),
+                          ),
+                          child: Text(
+                            'Batal',
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
                       ),
-                      const SizedBox(width: 8),
-                      Text('Dalam Perjalanan'),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (dateTimeController.text.isNotEmpty) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Pengingat berhasil disimpan'),
+                                  backgroundColor: mediumEmerald,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red.shade600,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            elevation: 5,
+                          ),
+                          child: Text(
+                            'Simpan',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
                     ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Estimasi tiba: 2 hari lagi',
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Tutup'),
-          ),
-          ElevatedButton(onPressed: () {}, child: const Text('Cek Status')),
-        ],
+          );
+        },
       ),
     );
   }
@@ -1123,42 +1689,126 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
     showDialog(
       context: context,
       builder: (BuildContext ctx) {
-        return AlertDialog(
+        return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(25),
           ),
-          title: Row(
-            children: [
-              Icon(Icons.logout, color: Colors.red.shade400),
-              const SizedBox(width: 8),
-              const Text('Konfirmasi Logout'),
-            ],
-          ),
-          content: const Text('Apakah Anda yakin ingin keluar dari akun ini?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: Text(
-                'Batal',
-                style: TextStyle(color: Colors.grey.shade600),
+          elevation: 10,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(25),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.white, Colors.red.shade50.withOpacity(0.3)],
               ),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-                AuthService().signOut().then((_) {
-                  Navigator.of(
-                    context,
-                  ).pushNamedAndRemoveUntil('/login', (route) => false);
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red.shade400,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Logout'),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.red.shade400, Colors.red.shade300],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.red.shade200,
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.logout, color: Colors.white, size: 28),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Konfirmasi Logout',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                Icon(Icons.help_outline, color: Colors.grey.shade600, size: 48),
+                const SizedBox(height: 16),
+
+                Text(
+                  'Apakah Anda yakin ingin keluar dari akun ini?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey.shade700,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Action buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            side: BorderSide(color: Colors.grey.shade300),
+                          ),
+                        ),
+                        child: Text(
+                          'Batal',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          AuthService().signOut().then((_) {
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                              '/login',
+                              (route) => false,
+                            );
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red.shade400,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          elevation: 5,
+                        ),
+                        child: Text(
+                          'Logout',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
         );
       },
     );

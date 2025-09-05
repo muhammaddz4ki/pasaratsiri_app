@@ -52,7 +52,11 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen> {
   ) async {
     showDialog(
       context: context,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+        ),
+      ),
       barrierDismissible: false,
     );
 
@@ -77,12 +81,36 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen> {
         summaryData: summaryData,
         chartImageBytes: chartImageBytes,
       );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Laporan berhasil diekspor ke PDF'),
+            backgroundColor: const Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Gagal membuat PDF: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal membuat PDF: $e'),
+            backgroundColor: Colors.red.shade600,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
     } finally {
-      Navigator.of(context).pop();
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
     }
   }
 
@@ -94,10 +122,32 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen> {
     ).format(DateTime.now());
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Dashboard Analitik'),
-        backgroundColor: Colors.green.shade700,
-        foregroundColor: Colors.white,
+        title: const Text(
+          'Dashboard Analitik',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF047857), // Emerald-700
+                Color(0xFF10B981), // Emerald-500
+                Color(0xFF14B8A6), // Teal-500
+              ],
+            ),
+          ),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           FutureBuilder<List<dynamic>>(
             future: _analyticsData,
@@ -114,18 +164,139 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen> {
           ),
         ],
       ),
-      backgroundColor: Colors.grey[100],
       body: FutureBuilder<List<dynamic>>(
         future: _analyticsData,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFF10B981).withOpacity(0.1),
+                          const Color(0xFF14B8A6).withOpacity(0.1),
+                        ],
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 3,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Color(0xFF10B981),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Memuat data analitik...',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEE2E2).withOpacity(0.5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.error_outline_rounded,
+                      size: 48,
+                      color: Colors.red.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Terjadi Kesalahan',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(
+                      '${snapshot.error}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
           if (!snapshot.hasData || snapshot.data == null) {
-            return const Center(child: Text('Gagal memuat data.'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFF10B981).withOpacity(0.1),
+                          const Color(0xFF14B8A6).withOpacity(0.1),
+                        ],
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.analytics_outlined,
+                      size: 64,
+                      color: const Color(0xFF10B981).withOpacity(0.7),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Data Tidak Tersedia',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 40),
+                    child: Text(
+                      'Tidak ada data analitik yang tersedia saat ini',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
 
           final Map<String, double> incomeData = snapshot.data![0];
@@ -159,9 +330,29 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen> {
   }
 
   Widget _buildEmptyStateCard() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Color(0xFFECFDF5)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF10B981).withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(color: const Color(0xFFD1FAE5), width: 1),
+      ),
       child: const Padding(
         padding: EdgeInsets.all(32.0),
         child: Center(
@@ -182,19 +373,19 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen> {
       physics: const NeverScrollableScrollPhysics(),
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
-      childAspectRatio: 1, // Ubah rasio agar lebih kotak
+      childAspectRatio: 1,
       children: [
         _miniSummaryCard(
           'Pesanan Selesai',
           summaryData['totalOrders'].toString(),
           Icons.receipt_long_outlined,
-          Colors.blue.shade600,
+          const Color(0xFF10B981),
         ),
         _miniSummaryCard(
           'Produk Terlaris',
           summaryData['topProduct'],
           Icons.star_border_outlined,
-          Colors.amber.shade700,
+          const Color(0xFFF59E0B),
         ),
         _miniSummaryCard(
           'Rata-rata/Order',
@@ -204,47 +395,71 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen> {
             decimalDigits: 0,
           ).format(summaryData['averageOrderValue']),
           Icons.monetization_on_outlined,
-          Colors.purple.shade600,
+          const Color(0xFF8B5CF6),
         ),
       ],
     );
   }
 
-  // --- PERBAIKAN DI WIDGET INI ---
   Widget _miniSummaryCard(
     String title,
     String value,
     IconData icon,
     Color color,
   ) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Color(0xFFECFDF5)],
+        ),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF10B981).withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+        border: Border.all(color: const Color(0xFFD1FAE5), width: 1),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(height: 12),
             Text(
               title,
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             const SizedBox(height: 4),
-            // Gunakan Expanded dan FittedBox agar teks menyesuaikan
             Expanded(
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
                 child: Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
+                    color: Colors.grey.shade800,
                   ),
-                  maxLines: 2, // Izinkan hingga 2 baris jika perlu
+                  maxLines: 2,
                 ),
               ),
             ),
@@ -253,15 +468,32 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen> {
       ),
     );
   }
-  // --- AKHIR PERBAIKAN ---
 
   Widget _buildSummaryCard(String title, double value) {
-    return Card(
-      elevation: 4,
-      shadowColor: Colors.grey.withOpacity(0.2),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Color(0xFFECFDF5)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF10B981).withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(color: const Color(0xFFD1FAE5), width: 1),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -273,17 +505,17 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen> {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
               NumberFormat.currency(
                 locale: 'id_ID',
                 symbol: 'Rp ',
                 decimalDigits: 0,
               ).format(value),
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
-                color: Colors.green.shade800,
+                color: Color(0xFF047857),
               ),
             ),
           ],
@@ -302,7 +534,7 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen> {
           barRods: [
             BarChartRodData(
               toY: data[weekTitles[i]]!,
-              color: Colors.green.shade600,
+              color: const Color(0xFF10B981),
               width: 20,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(6),
@@ -313,10 +545,29 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen> {
         ),
       );
     }
-    return Card(
-      elevation: 4,
-      shadowColor: Colors.grey.withOpacity(0.2),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Color(0xFFECFDF5)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF10B981).withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(color: const Color(0xFFD1FAE5), width: 1),
+      ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
         child: Column(
@@ -324,7 +575,11 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen> {
           children: [
             const Text(
               "Grafik Pendapatan Mingguan",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1F2937),
+              ),
             ),
             const SizedBox(height: 24),
             SizedBox(
@@ -368,7 +623,7 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen> {
                   barTouchData: BarTouchData(
                     touchTooltipData: BarTouchTooltipData(
                       getTooltipColor: (BarChartGroupData group) =>
-                          Colors.blueGrey,
+                          const Color(0xFF374151),
                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
                         String week = weekTitles[group.x.toInt()];
                         String formattedAmount = NumberFormat.currency(
@@ -402,10 +657,28 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen> {
   }
 
   Widget _buildPriceTrendCard() {
-    return Card(
-      elevation: 4,
-      shadowColor: Colors.grey.withOpacity(0.2),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Color(0xFFECFDF5)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF10B981).withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(color: const Color(0xFFD1FAE5), width: 1),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -416,7 +689,11 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen> {
               children: [
                 const Text(
                   "Analisis Tren Harga",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
+                  ),
                 ),
                 _buildCommodityDropdown(),
               ],
@@ -431,11 +708,37 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen> {
                 ),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
+                    return Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFF10B981).withOpacity(0.1),
+                              const Color(0xFF14B8A6).withOpacity(0.1),
+                            ],
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const SizedBox(
+                          width: 30,
+                          height: 30,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Color(0xFF10B981),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
                   }
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(
-                      child: Text("Data tren tidak tersedia."),
+                    return Center(
+                      child: Text(
+                        "Data tren tidak tersedia.",
+                        style: TextStyle(color: Colors.grey.shade600),
+                      ),
                     );
                   }
                   return LineChart(_buildLineChartData(snapshot.data!));
@@ -452,8 +755,9 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(10),
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
@@ -461,7 +765,10 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen> {
           items: _commodities.entries.map((entry) {
             return DropdownMenuItem<String>(
               value: entry.key,
-              child: Text(entry.value, style: const TextStyle(fontSize: 14)),
+              child: Text(
+                entry.value,
+                style: const TextStyle(fontSize: 14, color: Color(0xFF374151)),
+              ),
             );
           }).toList(),
           onChanged: (newValue) {
@@ -469,6 +776,8 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen> {
               _selectedCommodityId = newValue;
             });
           },
+          icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF6B7280)),
+          style: const TextStyle(color: Color(0xFF374151)),
         ),
       ),
     );
@@ -494,7 +803,10 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen> {
                 padding: const EdgeInsets.only(top: 8.0),
                 child: Text(
                   DateFormat('d MMM').format(date),
-                  style: const TextStyle(fontSize: 10),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: Color(0xFF6B7280),
+                  ),
                 ),
               );
             },
@@ -506,13 +818,13 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen> {
         LineChartBarData(
           spots: spots,
           isCurved: true,
-          color: Colors.orange.shade700,
+          color: const Color(0xFF10B981),
           barWidth: 4,
           isStrokeCapRound: true,
           dotData: FlDotData(show: false),
           belowBarData: BarAreaData(
             show: true,
-            color: Colors.orange.shade200.withOpacity(0.4),
+            color: const Color(0xFF10B981).withOpacity(0.2),
           ),
         ),
       ],
