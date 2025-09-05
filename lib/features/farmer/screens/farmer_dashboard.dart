@@ -3,6 +3,8 @@ import 'package:pasaratsiri_app/features/auth/services/auth_service.dart';
 import 'package:pasaratsiri_app/features/farmer/screens/farmer_chat_list_screen.dart';
 import 'package:pasaratsiri_app/features/farmer/screens/training_list_screen.dart';
 import 'package:pasaratsiri_app/features/farmer/screens/farmer_order_list_screen.dart';
+import 'farmer_analytics_screen.dart';
+import 'forum_list_screen.dart';
 
 class FarmerDashboard extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -31,8 +33,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-      _showNotificationScreen =
-          false; // Reset to main pages when nav item tapped
+      _showNotificationScreen = false;
     });
   }
 
@@ -88,7 +89,6 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
         ),
       ),
       actions: [
-        // Weather Widget
         Container(
           margin: const EdgeInsets.only(right: 8, top: 8),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -113,11 +113,10 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
             ],
           ),
         ),
-        // Notification Icon
         IconButton(
           onPressed: () {
             setState(() {
-              _showNotificationScreen = true; // Show Notifications screen
+              _showNotificationScreen = true;
             });
           },
           icon: Icon(Icons.notifications, color: Colors.white, size: 24),
@@ -478,6 +477,32 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                 );
               },
             ),
+            _buildEnhancedCard(
+              icon: Icons.analytics_outlined,
+              title: 'Dashboard Analitik',
+              color: Colors.indigo.shade600,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const FarmerAnalyticsScreen(),
+                  ),
+                );
+              },
+            ),
+            _buildEnhancedCard(
+              icon: Icons.forum_outlined,
+              title: 'Forum Diskusi',
+              color: Colors.lightBlue.shade600, // Warna baru
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ForumListScreen(),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ],
@@ -716,7 +741,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
           _profileMenuItem('Pengaturan', Icons.settings, () {}),
           _profileMenuItem('Bantuan', Icons.help, () {}),
           const SizedBox(height: 30),
-          Container(
+          SizedBox(
             width: double.infinity,
             height: 50,
             child: ElevatedButton.icon(
@@ -1121,7 +1146,11 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
             ElevatedButton(
               onPressed: () {
                 Navigator.of(ctx).pop();
-                AuthService().signOut();
+                AuthService().signOut().then((_) {
+                  Navigator.of(
+                    context,
+                  ).pushNamedAndRemoveUntil('/login', (route) => false);
+                });
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red.shade400,

@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 // Enum untuk status distribusi produk
 enum ProductStatus { inProcess, readyForSale }
 

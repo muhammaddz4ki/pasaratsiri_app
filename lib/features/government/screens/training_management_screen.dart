@@ -411,10 +411,6 @@ class _TrainingManagementScreenState extends State<TrainingManagementScreen>
       0,
       (total, t) => total + t.currentParticipants,
     );
-    final completedTrainings = trainings
-        .where((t) => t.status == 'Selesai')
-        .length;
-
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(

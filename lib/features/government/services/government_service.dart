@@ -140,8 +140,8 @@ class GovernmentService {
   }
 
   Future<String?> updateMarketPrice({
-    required String commodityId, // e.g., 'cengkeh'
-    required String commodityName, // e.g., 'Cengkeh'
+    required String commodityId,
+    required String commodityName,
     required int newPrice,
     required String updatedBy,
   }) async {
@@ -149,22 +149,25 @@ class GovernmentService {
       final docRef = _firestore.collection('market_prices').doc(commodityId);
       final docSnapshot = await docRef.get();
 
-      int previousPrice = 0;
+      int previousPrice = newPrice; // Anggap sama jika ini data pertama
       if (docSnapshot.exists) {
-        // Jika dokumen sudah ada, ambil harga saat ini sebagai harga sebelumnya
         previousPrice = docSnapshot.data()!['currentPrice'] as int;
       }
 
-      await docRef.set(
-        {
-          'commodityName': commodityName,
-          'currentPrice': newPrice,
-          'previousPrice': previousPrice, // Simpan harga lama
-          'lastUpdate': Timestamp.now(),
-          'updatedBy': updatedBy,
-        },
-        SetOptions(merge: true),
-      ); // Gunakan merge agar tidak menimpa field lain
+      // 1. Update data harga saat ini (tidak ada perubahan di sini)
+      await docRef.set({
+        'commodityName': commodityName,
+        'currentPrice': newPrice,
+        'previousPrice': previousPrice,
+        'lastUpdate': Timestamp.now(),
+        'updatedBy': updatedBy,
+      }, SetOptions(merge: true));
+
+      // 2. TAMBAHAN BARU: Simpan catatan ini ke subcollection riwayat
+      await docRef.collection('price_history').add({
+        'price': newPrice,
+        'date': Timestamp.now(),
+      });
 
       return null; // Sukses
     } on FirebaseException catch (e) {

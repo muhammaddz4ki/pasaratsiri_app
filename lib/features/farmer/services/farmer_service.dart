@@ -2,10 +2,12 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../models/request_model.dart';
 import 'package:pasaratsiri_app/features/government/models/training_model.dart';
+import '../models/comment_model.dart';
+import '../models/post_model.dart';
+import '../models/request_model.dart';
 
-// --- BARU: Model untuk Harga Pasar ---
+// Model untuk Harga Pasar (bisa Anda pindah ke file modelnya sendiri jika mau)
 class MarketPriceModel {
   final String commodity;
   final int currentPrice;
@@ -31,7 +33,93 @@ class FarmerService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // --- BARU: Fungsi untuk mendapatkan data harga pasar ---
+  // --- FUNGSI UNTUK FORUM ---
+
+  Future<String?> createPost({
+    required String title,
+    required String content,
+    required String category,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null) return "Pengguna harus login";
+
+    try {
+      final userData = await _firestore.collection('users').doc(user.uid).get();
+      final userName = userData.data()?['name'] ?? 'Petani Anonim';
+
+      await _firestore.collection('posts').add({
+        'title': title,
+        'content': content,
+        'category': category,
+        'authorId': user.uid,
+        'authorName': userName,
+        'createdAt': Timestamp.now(),
+        'commentCount': 0,
+      });
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  Stream<List<PostModel>> getPostsStream() {
+    return _firestore
+        .collection('posts')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => PostModel.fromFirestore(doc)).toList(),
+        );
+  }
+
+  Future<String?> addComment({
+    required String postId,
+    required String content,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null) return "Pengguna harus login";
+
+    try {
+      final userData = await _firestore.collection('users').doc(user.uid).get();
+      final userName = userData.data()?['name'] ?? 'Petani Anonim';
+
+      await _firestore
+          .collection('posts')
+          .doc(postId)
+          .collection('comments')
+          .add({
+            'content': content,
+            'authorId': user.uid,
+            'authorName': userName,
+            'createdAt': Timestamp.now(),
+          });
+
+      await _firestore.collection('posts').doc(postId).update({
+        'commentCount': FieldValue.increment(1),
+      });
+
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  Stream<List<CommentModel>> getCommentsStream(String postId) {
+    return _firestore
+        .collection('posts')
+        .doc(postId)
+        .collection('comments')
+        .orderBy('createdAt', descending: false)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => CommentModel.fromFirestore(doc))
+              .toList(),
+        );
+  }
+
+  // --- FUNGSI UNTUK HARGA PASAR ---
   Stream<List<MarketPriceModel>> getMarketPricesStream() {
     return _firestore
         .collection('market_prices')
@@ -44,7 +132,7 @@ class FarmerService {
         });
   }
 
-  // FUNGSI UNTUK MENYIMPAN DATA PENGAJUAN SERTIFIKASI
+  // --- FUNGSI LAINNYA YANG SUDAH ADA ---
   Future<void> applyForCertification({
     required String title,
     required String description,

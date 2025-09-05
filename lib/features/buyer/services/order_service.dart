@@ -6,7 +6,6 @@ class OrderService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Fungsi createOrder tidak perlu diubah, sudah benar.
   Future<String?> createOrder({
     required String address,
     required double totalPrice,
@@ -27,15 +26,18 @@ class OrderService {
       List<String> sellerIds = [];
       List<Map<String, dynamic>> orderItems = [];
 
+      // --- PERUBAHAN DI SINI ---
+      // Kita ambil dan simpan sellerId untuk setiap item
       for (var doc in cartSnapshot.docs) {
         DocumentSnapshot productDoc = await _firestore
             .collection('products')
             .doc(doc.id)
             .get();
+
+        String? sellerId; // Variabel untuk menyimpan sellerId per item
         if (productDoc.exists) {
-          String sellerId =
-              (productDoc.data() as Map<String, dynamic>)['sellerId'];
-          if (!sellerIds.contains(sellerId)) {
+          sellerId = (productDoc.data() as Map<String, dynamic>)['sellerId'];
+          if (sellerId != null && !sellerIds.contains(sellerId)) {
             sellerIds.add(sellerId);
           }
         }
@@ -45,14 +47,16 @@ class OrderService {
           'productName': doc.data()['productName'],
           'price': doc.data()['price'],
           'quantity': doc.data()['quantity'],
+          'sellerId': sellerId, // <-- FIELD PENTING DITAMBAHKAN
         });
       }
+      // --- AKHIR PERUBAHAN ---
 
       DocumentReference orderDoc = await _firestore.collection('orders').add({
         'userId': currentUser.uid,
         'userName': currentUser.displayName ?? 'N/A',
         'shippingAddress': address,
-        'items': orderItems,
+        'items': orderItems, // list items sekarang sudah berisi sellerId
         'totalPrice': totalPrice,
         'status': 'Menunggu Pembayaran',
         'paymentMethod': paymentMethod,
@@ -71,7 +75,6 @@ class OrderService {
     }
   }
 
-  // Fungsi getOrders untuk pembeli tidak perlu diubah.
   Stream<QuerySnapshot<Map<String, dynamic>>> getOrders({String? status}) {
     return _auth.authStateChanges().switchMap((user) {
       if (user != null) {
@@ -90,8 +93,6 @@ class OrderService {
     }).cast<QuerySnapshot<Map<String, dynamic>>>();
   }
 
-  // --- PERBAIKAN DI FUNGSI INI ---
-  // Tambahkan parameter 'status' agar bisa memfilter pesanan untuk petani
   Stream<QuerySnapshot<Map<String, dynamic>>> getOrdersForFarmer({
     String? status,
   }) {
@@ -101,11 +102,9 @@ class OrderService {
             .collection('orders')
             .where('sellerIds', arrayContains: user.uid);
 
-        // Tambahkan filter status jika diberikan
         if (status != null) {
           query = query.where('status', isEqualTo: status);
         } else {
-          // Jika tidak ada status spesifik, tampilkan semua yang relevan
           query = query.where(
             'status',
             whereIn: ['Diproses', 'Dikirim', 'Selesai', 'Dibatalkan'],
@@ -119,15 +118,20 @@ class OrderService {
     }).cast<QuerySnapshot<Map<String, dynamic>>>();
   }
 
-  // Fungsi updateOrderStatus tidak perlu diubah.
+  // --- PERUBAHAN DI SINI ---
   Future<String?> updateOrderStatus({
     required String orderId,
     required String newStatus,
   }) async {
     try {
-      await _firestore.collection('orders').doc(orderId).update({
-        'status': newStatus,
-      });
+      Map<String, dynamic> dataToUpdate = {'status': newStatus};
+
+      // Kunci untuk analitik: tambahkan timestamp saat pesanan selesai
+      if (newStatus == 'Selesai') {
+        dataToUpdate['completedAt'] = Timestamp.now();
+      }
+
+      await _firestore.collection('orders').doc(orderId).update(dataToUpdate);
       return null;
     } on FirebaseException catch (e) {
       return e.message ?? "Gagal memperbarui status pesanan.";
