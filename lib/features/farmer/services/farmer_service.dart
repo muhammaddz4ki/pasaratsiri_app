@@ -5,15 +5,49 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/request_model.dart';
 import 'package:pasaratsiri_app/features/government/models/training_model.dart';
 
+// --- BARU: Model untuk Harga Pasar ---
+class MarketPriceModel {
+  final String commodity;
+  final int currentPrice;
+  final int previousPrice;
+
+  MarketPriceModel({
+    required this.commodity,
+    required this.currentPrice,
+    required this.previousPrice,
+  });
+
+  factory MarketPriceModel.fromFirestore(DocumentSnapshot doc) {
+    Map data = doc.data() as Map<String, dynamic>;
+    return MarketPriceModel(
+      commodity: data['commodityName'] ?? 'N/A',
+      currentPrice: data['currentPrice'] ?? 0,
+      previousPrice: data['previousPrice'] ?? 0,
+    );
+  }
+}
+
 class FarmerService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // FUNGSI BARU UNTUK MENYIMPAN DATA PENGAJUAN SERTIFIKASI
+  // --- BARU: Fungsi untuk mendapatkan data harga pasar ---
+  Stream<List<MarketPriceModel>> getMarketPricesStream() {
+    return _firestore
+        .collection('market_prices')
+        .orderBy('commodityName', descending: false)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs
+              .map((doc) => MarketPriceModel.fromFirestore(doc))
+              .toList();
+        });
+  }
+
+  // FUNGSI UNTUK MENYIMPAN DATA PENGAJUAN SERTIFIKASI
   Future<void> applyForCertification({
     required String title,
     required String description,
-    // --- TAMBAHAN FIELD BARU ---
     required String applicantType,
     required String certificationType,
     required String location,
@@ -32,8 +66,7 @@ class FarmerService {
       'status': 'Pending',
       'submittedDate': Timestamp.now(),
       'userId': user.uid,
-      'userName': userName, // Simpan juga nama user
-      // --- SIMPAN FIELD BARU ---
+      'userName': userName,
       'applicantType': applicantType,
       'certificationType': certificationType,
       'location': location,
@@ -46,19 +79,17 @@ class FarmerService {
   Stream<List<RequestModel>> getMyCertifications() {
     final user = _auth.currentUser;
     if (user == null) {
-      // Return stream kosong jika user tidak login
       return Stream.value([]);
     }
 
     return _firestore
         .collection('certifications')
-        .where('userId', isEqualTo: user.uid) // Filter hanya milik user ini
-        .orderBy('submittedDate', descending: true) // Urutkan
+        .where('userId', isEqualTo: user.uid)
+        .orderBy('submittedDate', descending: true)
         .snapshots()
         .map((snapshot) {
           return snapshot.docs.map((doc) {
             final data = doc.data();
-            // Konversi status dari String ke enum RequestStatus
             RequestStatus status;
             switch (data['status']) {
               case 'Disetujui':
@@ -98,7 +129,7 @@ class FarmerService {
             RequestStatus status;
             switch (data['status']) {
               case 'Disetujui':
-              case 'Disalurkan': // Anggap 'Disalurkan' sama dengan 'Disetujui' di sisi petani
+              case 'Disalurkan':
                 status = RequestStatus.Approved;
                 break;
               case 'Ditolak':
@@ -121,7 +152,6 @@ class FarmerService {
   Future<void> applyForSubsidy({
     required String title,
     required String description,
-    // --- TAMBAHAN FIELD BARU ---
     required String applicantType,
     required String subsidyType,
     required int subsidyAmount,
@@ -142,7 +172,6 @@ class FarmerService {
       'submittedDate': Timestamp.now(),
       'userId': user.uid,
       'userName': userName,
-      // --- SIMPAN FIELD BARU ---
       'applicantType': applicantType,
       'subsidyType': subsidyType,
       'subsidyAmount': subsidyAmount,
@@ -156,7 +185,7 @@ class FarmerService {
   Stream<List<Training>> getAvailableTrainings() {
     return _firestore
         .collection('trainings')
-        .where('status', isEqualTo: 'Aktif') // Hanya tampilkan yang aktif
+        .where('status', isEqualTo: 'Aktif')
         .snapshots()
         .map((snapshot) {
           return snapshot.docs
@@ -165,7 +194,6 @@ class FarmerService {
         });
   }
 
-  /// Mengecek status pendaftaran seorang user pada sebuah pelatihan.
   Stream<DocumentSnapshot> getRegistrationStatus({
     required String trainingId,
     required String userId,
@@ -188,7 +216,7 @@ class FarmerService {
           .collection("trainings")
           .doc(trainingId)
           .collection("registrants")
-          .doc(userId); // docId harus sama dengan UID
+          .doc(userId);
 
       await docRef.set({
         "userId": userId,

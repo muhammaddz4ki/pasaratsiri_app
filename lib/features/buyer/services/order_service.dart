@@ -1,14 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:rxdart/rxdart.dart';
 
 class OrderService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Fungsi untuk membuat pesanan baru
+  // Fungsi createOrder tidak perlu diubah, sudah benar.
   Future<String?> createOrder({
     required String address,
     required double totalPrice,
+    required String paymentMethod,
   }) async {
     try {
       User? currentUser = _auth.currentUser;
@@ -22,16 +24,29 @@ class OrderService {
 
       if (cartSnapshot.docs.isEmpty) return "Keranjang Anda kosong.";
 
-      final List<Map<String, dynamic>> orderItems = cartSnapshot.docs.map((
-        doc,
-      ) {
-        return {
+      List<String> sellerIds = [];
+      List<Map<String, dynamic>> orderItems = [];
+
+      for (var doc in cartSnapshot.docs) {
+        DocumentSnapshot productDoc = await _firestore
+            .collection('products')
+            .doc(doc.id)
+            .get();
+        if (productDoc.exists) {
+          String sellerId =
+              (productDoc.data() as Map<String, dynamic>)['sellerId'];
+          if (!sellerIds.contains(sellerId)) {
+            sellerIds.add(sellerId);
+          }
+        }
+
+        orderItems.add({
           'productId': doc.id,
           'productName': doc.data()['productName'],
           'price': doc.data()['price'],
           'quantity': doc.data()['quantity'],
-        };
-      }).toList();
+        });
+      }
 
       DocumentReference orderDoc = await _firestore.collection('orders').add({
         'userId': currentUser.uid,
@@ -39,8 +54,10 @@ class OrderService {
         'shippingAddress': address,
         'items': orderItems,
         'totalPrice': totalPrice,
-        'status': 'pending',
+        'status': 'Menunggu Pembayaran',
+        'paymentMethod': paymentMethod,
         'createdAt': Timestamp.now(),
+        'sellerIds': sellerIds,
       });
 
       for (var doc in cartSnapshot.docs) {
@@ -54,14 +71,66 @@ class OrderService {
     }
   }
 
-  // --- FUNGSI BARU ---
-  // Mengambil riwayat pesanan pengguna
-  Stream<QuerySnapshot> getOrders() {
-    User? currentUser = _auth.currentUser;
-    return _firestore
-        .collection('orders')
-        .where('userId', isEqualTo: currentUser?.uid)
-        .orderBy('createdAt', descending: true)
-        .snapshots();
+  // Fungsi getOrders untuk pembeli tidak perlu diubah.
+  Stream<QuerySnapshot<Map<String, dynamic>>> getOrders({String? status}) {
+    return _auth.authStateChanges().switchMap((user) {
+      if (user != null) {
+        Query<Map<String, dynamic>> query = _firestore
+            .collection('orders')
+            .where('userId', isEqualTo: user.uid);
+
+        if (status != null && status != 'Semua') {
+          query = query.where('status', isEqualTo: status);
+        }
+
+        return query.orderBy('createdAt', descending: true).snapshots();
+      } else {
+        return Stream.value(null);
+      }
+    }).cast<QuerySnapshot<Map<String, dynamic>>>();
+  }
+
+  // --- PERBAIKAN DI FUNGSI INI ---
+  // Tambahkan parameter 'status' agar bisa memfilter pesanan untuk petani
+  Stream<QuerySnapshot<Map<String, dynamic>>> getOrdersForFarmer({
+    String? status,
+  }) {
+    return _auth.authStateChanges().switchMap((user) {
+      if (user != null) {
+        Query<Map<String, dynamic>> query = _firestore
+            .collection('orders')
+            .where('sellerIds', arrayContains: user.uid);
+
+        // Tambahkan filter status jika diberikan
+        if (status != null) {
+          query = query.where('status', isEqualTo: status);
+        } else {
+          // Jika tidak ada status spesifik, tampilkan semua yang relevan
+          query = query.where(
+            'status',
+            whereIn: ['Diproses', 'Dikirim', 'Selesai', 'Dibatalkan'],
+          );
+        }
+
+        return query.orderBy('createdAt', descending: true).snapshots();
+      } else {
+        return Stream.value(null);
+      }
+    }).cast<QuerySnapshot<Map<String, dynamic>>>();
+  }
+
+  // Fungsi updateOrderStatus tidak perlu diubah.
+  Future<String?> updateOrderStatus({
+    required String orderId,
+    required String newStatus,
+  }) async {
+    try {
+      await _firestore.collection('orders').doc(orderId).update({
+        'status': newStatus,
+      });
+      return null;
+    } on FirebaseException catch (e) {
+      return e.message ?? "Gagal memperbarui status pesanan.";
+    }
   }
 }

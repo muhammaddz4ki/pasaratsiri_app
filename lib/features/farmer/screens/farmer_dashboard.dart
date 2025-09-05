@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pasaratsiri_app/features/auth/services/auth_service.dart';
+import 'package:pasaratsiri_app/features/farmer/screens/farmer_chat_list_screen.dart';
 import 'package:pasaratsiri_app/features/farmer/screens/training_list_screen.dart';
-import '../widgets/dashboard_card.dart';
-//farmer_dashboard.dart
+import 'package:pasaratsiri_app/features/farmer/screens/farmer_order_list_screen.dart';
 
 class FarmerDashboard extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -14,6 +14,7 @@ class FarmerDashboard extends StatefulWidget {
 
 class _FarmerDashboardState extends State<FarmerDashboard> {
   int _selectedIndex = 0;
+  bool _showNotificationScreen = false;
   late final List<Widget> _pages;
 
   @override
@@ -22,7 +23,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
     _pages = <Widget>[
       _buildHomeScreen(context),
       const TrainingListScreen(),
-      _buildNotificationScreen(), // NEW: Halaman Notifikasi
+      const FarmerChatListScreen(),
       _buildProfileScreen(context),
     ];
   }
@@ -30,6 +31,8 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+      _showNotificationScreen =
+          false; // Reset to main pages when nav item tapped
     });
   }
 
@@ -39,7 +42,9 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
       backgroundColor: Colors.grey.shade50,
       extendBody: true,
       appBar: _buildAppBar(),
-      body: _pages[_selectedIndex],
+      body: _showNotificationScreen
+          ? _buildNotificationScreen()
+          : _pages[_selectedIndex],
       bottomNavigationBar: _buildBottomNavBar(),
     );
   }
@@ -83,9 +88,9 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
         ),
       ),
       actions: [
-        // NEW: Weather Widget
+        // Weather Widget
         Container(
-          margin: const EdgeInsets.only(right: 16, top: 8),
+          margin: const EdgeInsets.only(right: 8, top: 8),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.2),
@@ -108,18 +113,31 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
             ],
           ),
         ),
+        // Notification Icon
+        IconButton(
+          onPressed: () {
+            setState(() {
+              _showNotificationScreen = true; // Show Notifications screen
+            });
+          },
+          icon: Icon(Icons.notifications, color: Colors.white, size: 24),
+          padding: const EdgeInsets.only(right: 16, top: 8),
+        ),
       ],
     );
   }
 
   String _getAppBarTitle() {
+    if (_showNotificationScreen) {
+      return "Notifikasi";
+    }
     switch (_selectedIndex) {
       case 0:
         return "Dashboard Petani";
       case 1:
         return "Pusat Pelatihan";
       case 2:
-        return "Notifikasi";
+        return "Pesan Masuk";
       case 3:
         return "Profil Saya";
       default:
@@ -137,10 +155,10 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
           const SizedBox(height: 24),
           _buildSummarySection(),
           const SizedBox(height: 24),
-          _buildQuickActions(), // NEW: Quick Actions
+          _buildQuickActions(),
           const SizedBox(height: 24),
           _buildMainMenu(),
-          const SizedBox(height: 100), // Space for floating bottom nav
+          const SizedBox(height: 100),
         ],
       ),
     );
@@ -312,7 +330,6 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
     );
   }
 
-  // NEW: Quick Actions Section
   Widget _buildQuickActions() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -448,6 +465,19 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
               color: Colors.purple.shade600,
               onTap: () => Navigator.pushNamed(context, '/subsidy'),
             ),
+            _buildEnhancedCard(
+              icon: Icons.receipt_long_outlined,
+              title: 'Pesanan Masuk',
+              color: Colors.teal.shade600,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const FarmerOrderListScreen(),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ],
@@ -526,7 +556,6 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
     );
   }
 
-  // NEW: Notification Screen
   Widget _buildNotificationScreen() {
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -800,10 +829,10 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
           _buildNavItem(1, Icons.school, Icons.school_outlined, 'Pelatihan'),
           _buildNavItem(
             2,
-            Icons.notifications,
-            Icons.notifications_outlined,
-            'Notif',
-          ), // NEW
+            Icons.chat_bubble,
+            Icons.chat_bubble_outline,
+            'Pesan',
+          ),
           _buildNavItem(3, Icons.person, Icons.person_outline, 'Profil'),
         ],
       ),
@@ -867,7 +896,6 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
     );
   }
 
-  // NEW: Dialog Functions
   void _showHarvestDialog() {
     showDialog(
       context: context,

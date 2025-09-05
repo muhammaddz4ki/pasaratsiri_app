@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:pasaratsiri_app/features/government/services/government_service.dart'; // Pastikan path import ini benar
 
 class PriceManagementScreen extends StatefulWidget {
   const PriceManagementScreen({super.key});
@@ -11,31 +14,33 @@ class _PriceManagementScreenState extends State<PriceManagementScreen>
     with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _priceController = TextEditingController();
-  String _selectedCommodity = 'Akar Wangi';
+  String _selectedCommodity = 'Akar Wangi'; // Nilai awal
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
 
+  // DIHAPUS: List lokal tidak diperlukan lagi
+  // final List<Map<String, dynamic>> _priceHistory = [ ... ];
+
+  // BARU: Inisialisasi service untuk berinteraksi dengan Firestore
+  final GovernmentService _governmentService = GovernmentService();
+
+  // BARU: Mapping nama komoditas di UI ke ID dokumen di Firestore
+  final Map<String, String> _commodityMap = {
+    'Akar Wangi': 'akar_wangi',
+    'Cengkeh': 'cengkeh',
+    'Pala': 'pala',
+    'Kayu Putih': 'kayu_putih',
+    'Sereh Wangi': 'sereh_wangi',
+    'Minyak Nilam': 'minyak_nilam', // Tambahkan semua komoditas Anda
+  };
+
+  // List komoditas untuk dropdown, diambil dari keys map di atas
   final List<String> _commodities = [
     'Akar Wangi',
     'Cengkeh',
     'Pala',
     'Kayu Putih',
     'Sereh Wangi',
-  ];
-
-  final List<Map<String, dynamic>> _priceHistory = [
-    {
-      'commodity': 'Akar Wangi',
-      'price': 3200000,
-      'date': '2025-02-01',
-      'updatedBy': 'Admin Dinas Pertanian',
-    },
-    {
-      'commodity': 'Cengkeh',
-      'price': 150000,
-      'date': '2025-02-01',
-      'updatedBy': 'Admin Dinas Pertanian',
-    },
   ];
 
   @override
@@ -49,6 +54,91 @@ class _PriceManagementScreenState extends State<PriceManagementScreen>
       CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
     );
     _fadeController.forward();
+  }
+
+  // DIUBAH: Fungsi ini sekarang mengirim data ke Firestore
+  void _updatePrice() {
+    if (_formKey.currentState!.validate()) {
+      final String commodityName = _selectedCommodity;
+      final String commodityId = _commodityMap[commodityName]!;
+      final int newPrice = int.parse(_priceController.text);
+
+      // Panggil service untuk update ke Firestore
+      _governmentService
+          .updateMarketPrice(
+            commodityId: commodityId,
+            commodityName: commodityName,
+            newPrice: newPrice,
+            updatedBy:
+                'Admin Aktif', // Ganti dengan info admin yang login jika ada
+          )
+          .then((error) {
+            if (error == null) {
+              // Sukses
+              _priceController.clear();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.check_circle,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Harga $commodityName berhasil diperbarui',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  backgroundColor: Colors.green[600],
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  margin: const EdgeInsets.all(16),
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+            } else {
+              // Gagal
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Gagal memperbarui harga: $error'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          });
+    }
+  }
+
+  // Fungsi format harga tidak perlu diubah
+  String _formatPrice(int price) {
+    return price.toString().replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
+  }
+
+  @override
+  void dispose() {
+    _priceController.dispose();
+    _fadeController.dispose();
+    super.dispose();
   }
 
   @override
@@ -65,7 +155,7 @@ class _PriceManagementScreenState extends State<PriceManagementScreen>
         ),
         child: Column(
           children: [
-            // Enhanced AppBar
+            // Enhanced AppBar (Tidak ada perubahan)
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -144,7 +234,7 @@ class _PriceManagementScreenState extends State<PriceManagementScreen>
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
-                      // Enhanced Form Update Harga
+                      // Enhanced Form Update Harga (Tidak ada perubahan)
                       Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
@@ -157,26 +247,22 @@ class _PriceManagementScreenState extends State<PriceManagementScreen>
                           ),
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
-                            // Primary shadow
                             BoxShadow(
                               color: Colors.black.withOpacity(0.08),
                               blurRadius: 25,
                               offset: const Offset(0, 15),
                               spreadRadius: -5,
                             ),
-                            // Secondary shadow
                             BoxShadow(
                               color: Colors.grey.withOpacity(0.1),
                               blurRadius: 15,
                               offset: const Offset(0, 8),
                             ),
-                            // Accent shadow
                             BoxShadow(
                               color: Colors.blue.withOpacity(0.08),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
                             ),
-                            // Inner glow
                             BoxShadow(
                               color: Colors.white.withOpacity(0.8),
                               blurRadius: 5,
@@ -192,7 +278,6 @@ class _PriceManagementScreenState extends State<PriceManagementScreen>
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Enhanced Header with Glowing Avatar
                                 Row(
                                   children: [
                                     Container(
@@ -260,10 +345,7 @@ class _PriceManagementScreenState extends State<PriceManagementScreen>
                                     ),
                                   ],
                                 ),
-
                                 const SizedBox(height: 24),
-
-                                // Enhanced Dropdown
                                 Container(
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(16),
@@ -342,10 +424,7 @@ class _PriceManagementScreenState extends State<PriceManagementScreen>
                                     },
                                   ),
                                 ),
-
                                 const SizedBox(height: 20),
-
-                                // Enhanced Price Input
                                 Container(
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(16),
@@ -425,10 +504,7 @@ class _PriceManagementScreenState extends State<PriceManagementScreen>
                                     },
                                   ),
                                 ),
-
                                 const SizedBox(height: 28),
-
-                                // Enhanced Update Button
                                 Container(
                                   width: double.infinity,
                                   height: 56,
@@ -508,7 +584,7 @@ class _PriceManagementScreenState extends State<PriceManagementScreen>
 
                       const SizedBox(height: 32),
 
-                      // Enhanced History Section
+                      // Enhanced History Section (DIUBAH)
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -572,160 +648,201 @@ class _PriceManagementScreenState extends State<PriceManagementScreen>
                               ),
                             ),
 
-                            // Enhanced History List
-                            ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                              itemCount: _priceHistory.length,
-                              itemBuilder: (context, index) {
-                                final item = _priceHistory[index];
-                                return Container(
-                                  margin: const EdgeInsets.only(bottom: 12),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        Colors.white,
-                                        Colors.grey[50]!.withOpacity(0.5),
-                                      ],
+                            // DIUBAH: Menggunakan StreamBuilder untuk data real-time
+                            StreamBuilder<List<Map<String, dynamic>>>(
+                              stream: _governmentService.getPriceHistory(),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(20.0),
+                                      child: CircularProgressIndicator(),
                                     ),
-                                    borderRadius: BorderRadius.circular(20),
-                                    boxShadow: [
-                                      // Neumorphism outer shadow
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.15),
-                                        blurRadius: 15,
-                                        offset: const Offset(5, 5),
-                                      ),
-                                      // Neumorphism inner shadow
-                                      BoxShadow(
-                                        color: Colors.white.withOpacity(0.8),
-                                        blurRadius: 15,
-                                        offset: const Offset(-5, -5),
-                                      ),
-                                    ],
+                                  );
+                                }
+                                if (!snapshot.hasData ||
+                                    snapshot.data!.isEmpty) {
+                                  return const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(20.0),
+                                      child: Text('Belum ada riwayat harga.'),
+                                    ),
+                                  );
+                                }
+                                final priceHistory = snapshot.data!;
+                                return ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  padding: const EdgeInsets.fromLTRB(
+                                    16,
+                                    0,
+                                    16,
+                                    16,
                                   ),
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      borderRadius: BorderRadius.circular(20),
-                                      onTap: () {},
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(20),
-                                        child: Row(
-                                          children: [
-                                            Container(
-                                              width: 56,
-                                              height: 56,
-                                              decoration: BoxDecoration(
-                                                gradient: LinearGradient(
-                                                  colors: [
-                                                    Colors.green[400]!,
-                                                    Colors.green[600]!,
-                                                  ],
-                                                ),
-                                                shape: BoxShape.circle,
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.green
-                                                        .withOpacity(0.3),
-                                                    blurRadius: 12,
-                                                    spreadRadius: 2,
-                                                  ),
-                                                ],
-                                              ),
-                                              child: const Icon(
-                                                Icons.trending_up_rounded,
-                                                color: Colors.white,
-                                                size: 24,
-                                              ),
-                                            ),
-
-                                            const SizedBox(width: 16),
-
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    item['commodity'],
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w700,
-                                                      fontSize: 16,
-                                                      color: Colors.grey[800],
-                                                      letterSpacing: 0.2,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 4),
-                                                  Text(
-                                                    'Rp ${_formatPrice(item['price'])} / kg',
-                                                    style: TextStyle(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      color: Colors.green[700],
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 6),
-                                                  Container(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 8,
-                                                          vertical: 4,
-                                                        ),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.blue[50],
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            8,
-                                                          ),
-                                                    ),
-                                                    child: Text(
-                                                      'Update: ${item['date']}',
-                                                      style: TextStyle(
-                                                        fontSize: 11,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color: Colors.blue[700],
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 2),
-                                                  Text(
-                                                    'oleh ${item['updatedBy']}',
-                                                    style: TextStyle(
-                                                      fontSize: 11,
-                                                      color: Colors.grey[500],
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-
-                                            Container(
-                                              padding: const EdgeInsets.all(8),
-                                              decoration: BoxDecoration(
-                                                color: Colors.grey[100],
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                              ),
-                                              child: Icon(
-                                                Icons.arrow_forward_ios,
-                                                size: 16,
-                                                color: Colors.grey[600],
-                                              ),
-                                            ),
+                                  itemCount: priceHistory.length,
+                                  itemBuilder: (context, index) {
+                                    final item = priceHistory[index];
+                                    return Container(
+                                      margin: const EdgeInsets.only(bottom: 12),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [
+                                            Colors.white,
+                                            Colors.grey[50]!.withOpacity(0.5),
                                           ],
                                         ),
+                                        borderRadius: BorderRadius.circular(20),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(
+                                              0.15,
+                                            ),
+                                            blurRadius: 15,
+                                            offset: const Offset(5, 5),
+                                          ),
+                                          BoxShadow(
+                                            color: Colors.white.withOpacity(
+                                              0.8,
+                                            ),
+                                            blurRadius: 15,
+                                            offset: const Offset(-5, -5),
+                                          ),
+                                        ],
                                       ),
-                                    ),
-                                  ),
+                                      child: Material(
+                                        color: Colors.transparent,
+                                        child: InkWell(
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                          onTap: () {},
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(20),
+                                            child: Row(
+                                              children: [
+                                                Container(
+                                                  width: 56,
+                                                  height: 56,
+                                                  decoration: BoxDecoration(
+                                                    gradient: LinearGradient(
+                                                      colors: [
+                                                        Colors.green[400]!,
+                                                        Colors.green[600]!,
+                                                      ],
+                                                    ),
+                                                    shape: BoxShape.circle,
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: Colors.green
+                                                            .withOpacity(0.3),
+                                                        blurRadius: 12,
+                                                        spreadRadius: 2,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  child: const Icon(
+                                                    Icons.trending_up_rounded,
+                                                    color: Colors.white,
+                                                    size: 24,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 16),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        item['commodityName'] ??
+                                                            '',
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                          fontSize: 16,
+                                                          color:
+                                                              Colors.grey[800],
+                                                          letterSpacing: 0.2,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        'Rp ${_formatPrice(item['currentPrice'] ?? 0)} / kg',
+                                                        style: TextStyle(
+                                                          fontSize: 15,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color:
+                                                              Colors.green[700],
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 6),
+                                                      Container(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 8,
+                                                              vertical: 4,
+                                                            ),
+                                                        decoration: BoxDecoration(
+                                                          color:
+                                                              Colors.blue[50],
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                8,
+                                                              ),
+                                                        ),
+                                                        child: Text(
+                                                          'Update: ${item['lastUpdate'] != null ? DateFormat('yyyy-MM-dd').format((item['lastUpdate'] as Timestamp).toDate()) : ''}',
+                                                          style: TextStyle(
+                                                            fontSize: 11,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            color: Colors
+                                                                .blue[700],
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 2),
+                                                      Text(
+                                                        'oleh ${item['updatedBy'] ?? ''}',
+                                                        style: TextStyle(
+                                                          fontSize: 11,
+                                                          color:
+                                                              Colors.grey[500],
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Container(
+                                                  padding: const EdgeInsets.all(
+                                                    8,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.grey[100],
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12,
+                                                        ),
+                                                  ),
+                                                  child: Icon(
+                                                    Icons.arrow_forward_ios,
+                                                    size: 16,
+                                                    color: Colors.grey[600],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 );
                               },
                             ),
@@ -741,72 +858,5 @@ class _PriceManagementScreenState extends State<PriceManagementScreen>
         ),
       ),
     );
-  }
-
-  void _updatePrice() {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _priceHistory.insert(0, {
-          'commodity': _selectedCommodity,
-          'price': int.parse(_priceController.text),
-          'date': DateTime.now().toString().split(' ')[0],
-          'updatedBy': 'Admin Aktif',
-        });
-      });
-
-      _priceController.clear();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.check_circle,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Harga $_selectedCommodity berhasil diperbarui',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: Colors.green[600],
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          margin: const EdgeInsets.all(16),
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    }
-  }
-
-  String _formatPrice(int price) {
-    return price.toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]}.',
-    );
-  }
-
-  @override
-  void dispose() {
-    _priceController.dispose();
-    _fadeController.dispose();
-    super.dispose();
   }
 }

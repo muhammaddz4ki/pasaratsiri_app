@@ -5,6 +5,33 @@ import 'package:pasaratsiri_app/features/government/models/certification_applica
 import 'package:pasaratsiri_app/features/government/models/subsidy_application_model.dart';
 import 'package:pasaratsiri_app/features/government/models/training_model.dart';
 
+class MarketPrice {
+  final String id;
+  final String commodityName;
+  final int currentPrice;
+  final int previousPrice;
+  final Timestamp lastUpdate;
+
+  MarketPrice({
+    required this.id,
+    required this.commodityName,
+    required this.currentPrice,
+    required this.previousPrice,
+    required this.lastUpdate,
+  });
+
+  factory MarketPrice.fromFirestore(DocumentSnapshot doc) {
+    Map data = doc.data() as Map<String, dynamic>;
+    return MarketPrice(
+      id: doc.id,
+      commodityName: data['commodityName'] ?? '',
+      currentPrice: data['currentPrice'] ?? 0,
+      previousPrice: data['previousPrice'] ?? 0,
+      lastUpdate: data['lastUpdate'] ?? Timestamp.now(),
+    );
+  }
+}
+
 class GovernmentService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -60,13 +87,16 @@ class GovernmentService {
       return e.message;
     }
   }
+
   Stream<List<Training>> getTrainings() {
     return _firestore
         .collection('trainings')
         .orderBy('date', descending: true)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => Training.fromFirestore(doc)).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => Training.fromFirestore(doc)).toList(),
+        );
   }
 
   Future<String?> addTraining({
@@ -108,6 +138,48 @@ class GovernmentService {
       return e.message;
     }
   }
-  
-}
 
+  Future<String?> updateMarketPrice({
+    required String commodityId, // e.g., 'cengkeh'
+    required String commodityName, // e.g., 'Cengkeh'
+    required int newPrice,
+    required String updatedBy,
+  }) async {
+    try {
+      final docRef = _firestore.collection('market_prices').doc(commodityId);
+      final docSnapshot = await docRef.get();
+
+      int previousPrice = 0;
+      if (docSnapshot.exists) {
+        // Jika dokumen sudah ada, ambil harga saat ini sebagai harga sebelumnya
+        previousPrice = docSnapshot.data()!['currentPrice'] as int;
+      }
+
+      await docRef.set(
+        {
+          'commodityName': commodityName,
+          'currentPrice': newPrice,
+          'previousPrice': previousPrice, // Simpan harga lama
+          'lastUpdate': Timestamp.now(),
+          'updatedBy': updatedBy,
+        },
+        SetOptions(merge: true),
+      ); // Gunakan merge agar tidak menimpa field lain
+
+      return null; // Sukses
+    } on FirebaseException catch (e) {
+      return e.message;
+    }
+  }
+
+  // Fungsi untuk mendapatkan riwayat (opsional, jika Anda ingin menampilkan riwayat dari firestore)
+  Stream<List<Map<String, dynamic>>> getPriceHistory() {
+    return _firestore
+        .collection(
+          'market_prices',
+        ) // Anda bisa buat collection history terpisah jika perlu
+        .orderBy('lastUpdate', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
+  }
+}

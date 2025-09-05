@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:pasaratsiri_app/features/buyer/services/order_service.dart';
 
 class OrderDetailScreen extends StatelessWidget {
   final String orderId;
@@ -8,6 +9,8 @@ class OrderDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final OrderService orderService = OrderService();
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Detail Pesanan #${orderId.substring(0, 6)}...'),
@@ -32,6 +35,7 @@ class OrderDetailScreen extends StatelessWidget {
           String formattedDate = DateFormat(
             'dd MMMM yyyy, HH:mm',
           ).format(createdAt);
+          String status = data['status'] ?? '';
 
           return ListView(
             padding: const EdgeInsets.all(16.0),
@@ -81,6 +85,52 @@ class OrderDetailScreen extends StatelessWidget {
                   ),
                 );
               }).toList(),
+              const SizedBox(height: 32),
+              if (status == 'Menunggu Pembayaran')
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text('Saya Sudah Bayar (Dummy)'),
+                      onPressed: () async {
+                        await orderService.updateOrderStatus(
+                          orderId: orderId,
+                          newStatus: 'Diproses',
+                        );
+                        Navigator.pop(context);
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      style: TextButton.styleFrom(foregroundColor: Colors.red),
+                      child: const Text('Batalkan Pesanan'),
+                      onPressed: () async {
+                        await orderService.updateOrderStatus(
+                          orderId: orderId,
+                          newStatus: 'Dibatalkan',
+                        );
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ],
+                ),
+              if (status == 'Dikirim')
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: const Text('Pesanan Sudah Diterima'),
+                  onPressed: () async {
+                    await orderService.updateOrderStatus(
+                      orderId: orderId,
+                      newStatus: 'Selesai',
+                    );
+                    Navigator.pop(context);
+                  },
+                ),
             ],
           );
         },
