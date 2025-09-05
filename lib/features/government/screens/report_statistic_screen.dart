@@ -11,6 +11,7 @@ class ReportStatisticScreen extends StatefulWidget {
 class _ReportStatisticScreenState extends State<ReportStatisticScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  late AnimationController _animationController;
   String _selectedPeriod = 'Bulan Ini';
   final List<String> _periods = [
     'Hari Ini',
@@ -25,143 +26,357 @@ class _ReportStatisticScreenState extends State<ReportStatisticScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _animationController.forward();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Laporan & Statistik Minyak Atsiri'),
-        backgroundColor: Colors.green[800],
-        foregroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (String period) {
-              setState(() {
-                _selectedPeriod = period;
-              });
-            },
-            itemBuilder: (BuildContext context) {
-              return _periods.map((String period) {
-                return PopupMenuItem<String>(
-                  value: period,
-                  child: Text(period),
-                );
-              }).toList();
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFE0F2FE), Color(0xFFF8FAFC), Color(0xFFFFFFFF)],
+            stops: [0.0, 0.3, 1.0],
+          ),
+        ),
+        child: Column(
+          children: [
+            _buildEnhancedAppBar(),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
                 children: [
-                  Text(_selectedPeriod),
-                  const Icon(Icons.arrow_drop_down),
+                  _buildSummaryTab(),
+                  _buildSalesTab(),
+                  _buildUsersTab(),
+                  _buildRegionTab(),
                 ],
               ),
             ),
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: Colors.white,
-          tabs: const [
-            Tab(text: 'Ringkasan'),
-            Tab(text: 'Penjualan'),
-            Tab(text: 'Pengguna'),
-            Tab(text: 'Wilayah'),
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildSummaryTab(),
-          _buildSalesTab(),
-          _buildUsersTab(),
-          _buildRegionTab(),
+    );
+  }
+
+  Widget _buildEnhancedAppBar() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1E40AF), Color(0xFF3B82F6), Color(0xFF4F46E5)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+            spreadRadius: 2,
+          ),
         ],
+      ),
+      child: SafeArea(
+        child: Column(
+          children: [
+            // Header Section
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Laporan & Statistik',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        Text(
+                          'Pasar Atsiri',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: PopupMenuButton<String>(
+                      onSelected: (String period) {
+                        setState(() {
+                          _selectedPeriod = period;
+                        });
+                      },
+                      itemBuilder: (BuildContext context) {
+                        return _periods.map((String period) {
+                          return PopupMenuItem<String>(
+                            value: period,
+                            child: Text(period),
+                          );
+                        }).toList();
+                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _selectedPeriod,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(
+                            Icons.keyboard_arrow_down,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Enhanced TabBar
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(25),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: TabBar(
+                controller: _tabController,
+                isScrollable: true,
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white70,
+                labelStyle: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14,
+                ),
+                indicator: BoxDecoration(
+                  color: Colors.white.withOpacity(0.25),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.white.withOpacity(0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                indicatorPadding: const EdgeInsets.all(4),
+                dividerColor: Colors.transparent,
+                tabs: const [
+                  Tab(text: 'Ringkasan'),
+                  Tab(text: 'Penjualan'),
+                  Tab(text: 'Pengguna'),
+                  Tab(text: 'Wilayah'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildSummaryTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Cards ringkasan
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            childAspectRatio: 1.5,
-            children: [
-              _buildStatCard(
-                'Total Petani',
-                '4,027',
-                Icons.agriculture,
-                Colors.green,
-                '+5%',
-                true,
-              ),
-              _buildStatCard(
-                'Total Pembeli',
-                '156',
-                Icons.business,
-                Colors.blue,
-                '+12%',
-                true,
-              ),
-              _buildStatCard(
-                'Transaksi Harian',
-                '42',
-                Icons.receipt,
-                Colors.orange,
-                '+8%',
-                true,
-              ),
-              _buildStatCard(
-                'Sertifikasi Aktif',
-                '33',
-                Icons.verified,
-                Colors.purple,
-                '+15%',
-                true,
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
+      padding: const EdgeInsets.all(20),
+      child: FadeTransition(
+        opacity: _animationController,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Enhanced Stats Cards
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              childAspectRatio: 1.4,
+              children: [
+                _buildEnhancedStatCard(
+                  'Total Petani',
+                  '4,027',
+                  Icons.agriculture_outlined,
+                  const LinearGradient(
+                    colors: [Color(0xFF10B981), Color(0xFF059669)],
+                  ),
+                  '+5%',
+                  true,
+                ),
+                _buildEnhancedStatCard(
+                  'Total Pembeli',
+                  '156',
+                  Icons.business_outlined,
+                  const LinearGradient(
+                    colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                  ),
+                  '+12%',
+                  true,
+                ),
+                _buildEnhancedStatCard(
+                  'Transaksi Harian',
+                  '42',
+                  Icons.receipt_long_outlined,
+                  const LinearGradient(
+                    colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                  ),
+                  '+8%',
+                  true,
+                ),
+                _buildEnhancedStatCard(
+                  'Sertifikasi Aktif',
+                  '33',
+                  Icons.verified_outlined,
+                  const LinearGradient(
+                    colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+                  ),
+                  '+15%',
+                  true,
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
 
-          // Chart transaksi mingguan
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
+            // Enhanced Chart Card
+            _buildEnhancedCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Trend Transaksi Minyak Atsiri',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF10B981), Color(0xFF059669)],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF10B981).withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.trending_up,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Trend Transaksi Minyak Atsiri',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1F2937),
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                            Text(
+                              'Grafik performa mingguan',
+                              style: TextStyle(
+                                color: Color(0xFF6B7280),
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                   SizedBox(
-                    height: 200,
+                    height: 220,
                     child: LineChart(
                       LineChartData(
-                        gridData: const FlGridData(show: true),
+                        gridData: FlGridData(
+                          show: true,
+                          drawVerticalLine: true,
+                          drawHorizontalLine: true,
+                          horizontalInterval: 10,
+                          verticalInterval: 1,
+                          getDrawingHorizontalLine: (value) {
+                            return FlLine(
+                              color: Colors.grey.withOpacity(0.2),
+                              strokeWidth: 1,
+                            );
+                          },
+                          getDrawingVerticalLine: (value) {
+                            return FlLine(
+                              color: Colors.grey.withOpacity(0.2),
+                              strokeWidth: 1,
+                            );
+                          },
+                        ),
                         titlesData: FlTitlesData(
                           bottomTitles: AxisTitles(
                             sideTitles: SideTitles(
@@ -177,14 +392,36 @@ class _ReportStatisticScreenState extends State<ReportStatisticScreen>
                                   'Min',
                                 ];
                                 if (value.toInt() < days.length) {
-                                  return Text(days[value.toInt()]);
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: Text(
+                                      days[value.toInt()],
+                                      style: const TextStyle(
+                                        color: Color(0xFF6B7280),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  );
                                 }
                                 return const Text('');
                               },
                             ),
                           ),
-                          leftTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: true),
+                          leftTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              getTitlesWidget: (value, meta) {
+                                return Text(
+                                  value.toInt().toString(),
+                                  style: const TextStyle(
+                                    color: Color(0xFF6B7280),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                           topTitles: const AxisTitles(
                             sideTitles: SideTitles(showTitles: false),
@@ -193,7 +430,13 @@ class _ReportStatisticScreenState extends State<ReportStatisticScreen>
                             sideTitles: SideTitles(showTitles: false),
                           ),
                         ),
-                        borderData: FlBorderData(show: true),
+                        borderData: FlBorderData(
+                          show: true,
+                          border: Border.all(
+                            color: Colors.grey.withOpacity(0.2),
+                            width: 1,
+                          ),
+                        ),
                         lineBarsData: [
                           LineChartBarData(
                             spots: const [
@@ -206,11 +449,31 @@ class _ReportStatisticScreenState extends State<ReportStatisticScreen>
                               FlSpot(6, 35),
                             ],
                             isCurved: true,
-                            color: Colors.green,
-                            barWidth: 3,
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF10B981), Color(0xFF059669)],
+                            ),
+                            barWidth: 4,
+                            dotData: FlDotData(
+                              show: true,
+                              getDotPainter: (spot, percent, barData, index) {
+                                return FlDotCirclePainter(
+                                  radius: 6,
+                                  color: Colors.white,
+                                  strokeWidth: 3,
+                                  strokeColor: const Color(0xFF10B981),
+                                );
+                              },
+                            ),
                             belowBarData: BarAreaData(
                               show: true,
-                              color: Colors.green.withOpacity(0.1),
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF10B981).withOpacity(0.3),
+                                  const Color(0xFF10B981).withOpacity(0.1),
+                                ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
                             ),
                           ),
                         ],
@@ -220,46 +483,303 @@ class _ReportStatisticScreenState extends State<ReportStatisticScreen>
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
-          // Top products
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
+            // Enhanced Top Products Card
+            _buildEnhancedCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Produk Minyak Atsiri Terlaris',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFF59E0B).withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.star_outline,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Produk Minyak Atsiri Terlaris',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1F2937),
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                            Text(
+                              'Berdasarkan volume penjualan',
+                              style: TextStyle(
+                                color: Color(0xFF6B7280),
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  _buildProductItem(
+                  const SizedBox(height: 24),
+                  _buildEnhancedProductItem(
                     'Minyak Vetiver Premium',
                     'Rp 3.1jt/kg',
                     '156 kg terjual',
-                    Icons.oil_barrel,
+                    Icons.eco_outlined,
+                    const Color(0xFF10B981),
                   ),
-                  _buildProductItem(
+                  _buildEnhancedProductItem(
                     'Minyak Akar Wangi Standar',
                     'Rp 2.7jt/kg',
                     '128 kg terjual',
-                    Icons.oil_barrel,
+                    Icons.spa_outlined,
+                    const Color(0xFF3B82F6),
                   ),
-                  _buildProductItem(
+                  _buildEnhancedProductItem(
                     'Paket Aromaterapi',
                     'Rp 250rb/paket',
                     '87 terjual',
-                    Icons.spa,
+                    Icons.local_florist_outlined,
+                    const Color(0xFFF59E0B),
                   ),
-                  _buildProductItem(
+                  _buildEnhancedProductItem(
                     'Minyak Atsiri Kemasan UMKM',
                     'Rp 180rb/botol',
                     '64 terjual',
-                    Icons.local_pharmacy,
+                    Icons.local_pharmacy_outlined,
+                    const Color(0xFF8B5CF6),
                   ),
                 ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEnhancedStatCard(
+    String title,
+    String value,
+    IconData icon,
+    LinearGradient gradient,
+    String change,
+    bool isPositive,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {},
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: gradient,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: gradient.colors.first.withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 28),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF6B7280),
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isPositive
+                        ? const Color(0xFF10B981).withOpacity(0.1)
+                        : const Color(0xFFEF4444).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isPositive ? Icons.trending_up : Icons.trending_down,
+                        color: isPositive
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFEF4444),
+                        size: 16,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        change,
+                        style: TextStyle(
+                          color: isPositive
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFFEF4444),
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEnhancedCard({required Widget child}) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 25,
+            offset: const Offset(0, 12),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Padding(padding: const EdgeInsets.all(24), child: child),
+    );
+  }
+
+  Widget _buildEnhancedProductItem(
+    String name,
+    String price,
+    String sold,
+    IconData icon,
+    Color color,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.withOpacity(0.1), width: 1),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1F2937),
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  price,
+                  style: const TextStyle(
+                    color: Color(0xFF6B7280),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              sold,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
               ),
             ),
           ),
@@ -268,178 +788,433 @@ class _ReportStatisticScreenState extends State<ReportStatisticScreen>
     );
   }
 
+  // Placeholder methods for other tabs (keeping the same enhanced style)
   Widget _buildSalesTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          // Volume penjualan chart
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Volume Penjualan Bulanan (kg)',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    height: 250,
-                    child: BarChart(
-                      BarChartData(
-                        alignment: BarChartAlignment.spaceAround,
-                        barTouchData: BarTouchData(enabled: false),
-                        titlesData: FlTitlesData(
-                          bottomTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              getTitlesWidget: (value, meta) {
-                                const months = [
-                                  'Jan',
-                                  'Feb',
-                                  'Mar',
-                                  'Apr',
-                                  'Mei',
-                                  'Jun',
-                                ];
-                                if (value.toInt() < months.length) {
-                                  return Text(months[value.toInt()]);
-                                }
-                                return const Text('');
-                              },
+          _buildEnhancedCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF3B82F6).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.bar_chart,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Volume Penjualan Bulanan',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F2937),
+                              letterSpacing: 0.3,
                             ),
                           ),
-                          leftTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: true),
+                          Text(
+                            'Dalam satuan kilogram (kg)',
+                            style: TextStyle(
+                              color: Color(0xFF6B7280),
+                              fontSize: 14,
+                            ),
                           ),
-                          topTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: false),
-                          ),
-                          rightTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: false),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  height: 280,
+                  child: BarChart(
+                    BarChartData(
+                      alignment: BarChartAlignment.spaceAround,
+                      barTouchData: BarTouchData(
+                        enabled: true,
+                        touchTooltipData: BarTouchTooltipData(
+                          getTooltipColor: (group) => const Color(0xFF1F2937),
+                          tooltipRoundedRadius: 8,
+                          getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                            return BarTooltipItem(
+                              '${rod.toY.round()} kg',
+                              const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      titlesData: FlTitlesData(
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, meta) {
+                              const months = [
+                                'Jan',
+                                'Feb',
+                                'Mar',
+                                'Apr',
+                                'Mei',
+                                'Jun',
+                              ];
+                              if (value.toInt() < months.length) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: Text(
+                                    months[value.toInt()],
+                                    style: const TextStyle(
+                                      color: Color(0xFF6B7280),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                );
+                              }
+                              return const Text('');
+                            },
                           ),
                         ),
-                        borderData: FlBorderData(show: false),
-                        barGroups: [
-                          BarChartGroupData(
-                            x: 0,
-                            barRods: [
-                              BarChartRodData(toY: 4200, color: Colors.green),
-                            ],
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, meta) {
+                              return Text(
+                                '${(value / 1000).toStringAsFixed(0)}k',
+                                style: const TextStyle(
+                                  color: Color(0xFF6B7280),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              );
+                            },
                           ),
-                          BarChartGroupData(
-                            x: 1,
-                            barRods: [
-                              BarChartRodData(toY: 3800, color: Colors.green),
-                            ],
-                          ),
-                          BarChartGroupData(
-                            x: 2,
-                            barRods: [
-                              BarChartRodData(toY: 4500, color: Colors.green),
-                            ],
-                          ),
-                          BarChartGroupData(
-                            x: 3,
-                            barRods: [
-                              BarChartRodData(toY: 5100, color: Colors.green),
-                            ],
-                          ),
-                          BarChartGroupData(
-                            x: 4,
-                            barRods: [
-                              BarChartRodData(toY: 4800, color: Colors.green),
-                            ],
-                          ),
-                          BarChartGroupData(
-                            x: 5,
-                            barRods: [
-                              BarChartRodData(toY: 5600, color: Colors.green),
-                            ],
-                          ),
-                        ],
+                        ),
+                        topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
                       ),
+                      borderData: FlBorderData(
+                        show: true,
+                        border: Border.all(
+                          color: Colors.grey.withOpacity(0.2),
+                          width: 1,
+                        ),
+                      ),
+                      gridData: FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                        horizontalInterval: 1000,
+                        getDrawingHorizontalLine: (value) {
+                          return FlLine(
+                            color: Colors.grey.withOpacity(0.2),
+                            strokeWidth: 1,
+                          );
+                        },
+                      ),
+                      barGroups: [
+                        BarChartGroupData(
+                          x: 0,
+                          barRods: [
+                            BarChartRodData(
+                              toY: 4200,
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                              ),
+                              width: 40,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(8),
+                                topRight: Radius.circular(8),
+                              ),
+                            ),
+                          ],
+                        ),
+                        BarChartGroupData(
+                          x: 1,
+                          barRods: [
+                            BarChartRodData(
+                              toY: 3800,
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                              ),
+                              width: 40,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(8),
+                                topRight: Radius.circular(8),
+                              ),
+                            ),
+                          ],
+                        ),
+                        BarChartGroupData(
+                          x: 2,
+                          barRods: [
+                            BarChartRodData(
+                              toY: 4500,
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                              ),
+                              width: 40,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(8),
+                                topRight: Radius.circular(8),
+                              ),
+                            ),
+                          ],
+                        ),
+                        BarChartGroupData(
+                          x: 3,
+                          barRods: [
+                            BarChartRodData(
+                              toY: 5100,
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                              ),
+                              width: 40,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(8),
+                                topRight: Radius.circular(8),
+                              ),
+                            ),
+                          ],
+                        ),
+                        BarChartGroupData(
+                          x: 4,
+                          barRods: [
+                            BarChartRodData(
+                              toY: 4800,
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                              ),
+                              width: 40,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(8),
+                                topRight: Radius.circular(8),
+                              ),
+                            ),
+                          ],
+                        ),
+                        BarChartGroupData(
+                          x: 5,
+                          barRods: [
+                            BarChartRodData(
+                              toY: 5600,
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                              ),
+                              width: 40,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(8),
+                                topRight: Radius.circular(8),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 16),
-
-          // Category breakdown
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Penjualan per Kategori',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    height: 200,
-                    child: PieChart(
-                      PieChartData(
-                        sectionsSpace: 2,
-                        centerSpaceRadius: 40,
-                        sections: [
-                          PieChartSectionData(
-                            color: Colors.green,
-                            value: 65,
-                            title: '65%',
-                            titleStyle: const TextStyle(
-                              color: Colors.white,
+          const SizedBox(height: 24),
+          // Enhanced Pie Chart
+          _buildEnhancedCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFF59E0B).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.pie_chart_outline,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Penjualan per Kategori',
+                            style: TextStyle(
+                              fontSize: 20,
                               fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F2937),
+                              letterSpacing: 0.3,
                             ),
                           ),
-                          PieChartSectionData(
-                            color: Colors.blue,
-                            value: 15,
-                            title: '15%',
-                            titleStyle: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          PieChartSectionData(
-                            color: Colors.orange,
-                            value: 12,
-                            title: '12%',
-                            titleStyle: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          PieChartSectionData(
-                            color: Colors.purple,
-                            value: 8,
-                            title: '8%',
-                            titleStyle: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                          Text(
+                            'Distribusi kategori produk',
+                            style: TextStyle(
+                              color: Color(0xFF6B7280),
+                              fontSize: 14,
                             ),
                           ),
                         ],
                       ),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  height: 250,
+                  child: PieChart(
+                    PieChartData(
+                      sectionsSpace: 4,
+                      centerSpaceRadius: 60,
+                      startDegreeOffset: -90,
+                      sections: [
+                        PieChartSectionData(
+                          color: const Color(0xFF10B981),
+                          value: 65,
+                          title: '65%',
+                          titleStyle: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                          radius: 80,
+                          badgeWidget: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.eco,
+                              color: Color(0xFF10B981),
+                              size: 16,
+                            ),
+                          ),
+                          badgePositionPercentageOffset: 1.3,
+                        ),
+                        PieChartSectionData(
+                          color: const Color(0xFF3B82F6),
+                          value: 15,
+                          title: '15%',
+                          titleStyle: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                          radius: 75,
+                        ),
+                        PieChartSectionData(
+                          color: const Color(0xFFF59E0B),
+                          value: 12,
+                          title: '12%',
+                          titleStyle: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                          radius: 75,
+                        ),
+                        PieChartSectionData(
+                          color: const Color(0xFF8B5CF6),
+                          value: 8,
+                          title: '8%',
+                          titleStyle: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                          radius: 75,
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildLegendItem(Colors.green, 'Minyak Mentah'),
-                      _buildLegendItem(Colors.blue, 'Produk Olahan'),
-                      _buildLegendItem(Colors.orange, 'Aromaterapi'),
-                      _buildLegendItem(Colors.purple, 'Lainnya'),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 24),
+                Wrap(
+                  spacing: 20,
+                  runSpacing: 12,
+                  children: [
+                    _buildEnhancedLegendItem(
+                      const Color(0xFF10B981),
+                      'Minyak Mentah',
+                      '65%',
+                    ),
+                    _buildEnhancedLegendItem(
+                      const Color(0xFF3B82F6),
+                      'Produk Olahan',
+                      '15%',
+                    ),
+                    _buildEnhancedLegendItem(
+                      const Color(0xFFF59E0B),
+                      'Aromaterapi',
+                      '12%',
+                    ),
+                    _buildEnhancedLegendItem(
+                      const Color(0xFF8B5CF6),
+                      'Lainnya',
+                      '8%',
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ],
@@ -449,184 +1224,356 @@ class _ReportStatisticScreenState extends State<ReportStatisticScreen>
 
   Widget _buildUsersTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          // User stats
+          // Enhanced User Stats Row
           Row(
             children: [
               Expanded(
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        const Icon(
-                          Icons.agriculture,
-                          color: Colors.green,
-                          size: 32,
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Petani Baru',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${_selectedPeriod}: 42',
-                          style: const TextStyle(fontSize: 18),
-                        ),
-                      ],
-                    ),
+                child: _buildEnhancedUserCard(
+                  'Petani Baru',
+                  '42',
+                  Icons.agriculture_outlined,
+                  const LinearGradient(
+                    colors: [Color(0xFF10B981), Color(0xFF059669)],
                   ),
+                  _selectedPeriod,
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        const Icon(
-                          Icons.business_center,
-                          color: Colors.blue,
-                          size: 32,
+                child: _buildEnhancedUserCard(
+                  'Pembeli Baru',
+                  '18',
+                  Icons.business_center_outlined,
+                  const LinearGradient(
+                    colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                  ),
+                  _selectedPeriod,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          // Enhanced User Activity Chart
+          _buildEnhancedCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
                         ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Pembeli Baru',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.timeline,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Aktivitas Pengguna Harian',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F2937),
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                          Text(
+                            'Trend pengguna aktif per hari',
+                            style: TextStyle(
+                              color: Color(0xFF6B7280),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  height: 220,
+                  child: LineChart(
+                    LineChartData(
+                      gridData: FlGridData(
+                        show: true,
+                        drawVerticalLine: true,
+                        drawHorizontalLine: true,
+                        horizontalInterval: 100,
+                        verticalInterval: 1,
+                        getDrawingHorizontalLine: (value) {
+                          return FlLine(
+                            color: Colors.grey.withOpacity(0.2),
+                            strokeWidth: 1,
+                          );
+                        },
+                        getDrawingVerticalLine: (value) {
+                          return FlLine(
+                            color: Colors.grey.withOpacity(0.2),
+                            strokeWidth: 1,
+                          );
+                        },
+                      ),
+                      titlesData: FlTitlesData(
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, meta) {
+                              const days = [
+                                '1',
+                                '5',
+                                '10',
+                                '15',
+                                '20',
+                                '25',
+                                '30',
+                              ];
+                              if (value.toInt() < days.length) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: Text(
+                                    days[value.toInt()],
+                                    style: const TextStyle(
+                                      color: Color(0xFF6B7280),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                );
+                              }
+                              return const Text('');
+                            },
+                          ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${_selectedPeriod}: 18',
-                          style: const TextStyle(fontSize: 18),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, meta) {
+                              return Text(
+                                value.toInt().toString(),
+                                style: const TextStyle(
+                                  color: Color(0xFF6B7280),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                      ),
+                      borderData: FlBorderData(
+                        show: true,
+                        border: Border.all(
+                          color: Colors.grey.withOpacity(0.2),
+                          width: 1,
+                        ),
+                      ),
+                      lineBarsData: [
+                        LineChartBarData(
+                          spots: const [
+                            FlSpot(0, 420),
+                            FlSpot(1, 480),
+                            FlSpot(2, 510),
+                            FlSpot(3, 560),
+                            FlSpot(4, 600),
+                            FlSpot(5, 580),
+                            FlSpot(6, 540),
+                          ],
+                          isCurved: true,
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF10B981), Color(0xFF059669)],
+                          ),
+                          barWidth: 4,
+                          dotData: FlDotData(
+                            show: true,
+                            getDotPainter: (spot, percent, barData, index) {
+                              return FlDotCirclePainter(
+                                radius: 6,
+                                color: Colors.white,
+                                strokeWidth: 3,
+                                strokeColor: const Color(0xFF10B981),
+                              );
+                            },
+                          ),
+                          belowBarData: BarAreaData(
+                            show: true,
+                            gradient: LinearGradient(
+                              colors: [
+                                const Color(0xFF10B981).withOpacity(0.2),
+                                const Color(0xFF10B981).withOpacity(0.05),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                          ),
+                        ),
+                        LineChartBarData(
+                          spots: const [
+                            FlSpot(0, 120),
+                            FlSpot(1, 145),
+                            FlSpot(2, 160),
+                            FlSpot(3, 180),
+                            FlSpot(4, 195),
+                            FlSpot(5, 210),
+                            FlSpot(6, 190),
+                          ],
+                          isCurved: true,
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                          ),
+                          barWidth: 4,
+                          dotData: FlDotData(
+                            show: true,
+                            getDotPainter: (spot, percent, barData, index) {
+                              return FlDotCirclePainter(
+                                radius: 6,
+                                color: Colors.white,
+                                strokeWidth: 3,
+                                strokeColor: const Color(0xFF3B82F6),
+                              );
+                            },
+                          ),
+                          belowBarData: BarAreaData(
+                            show: true,
+                            gradient: LinearGradient(
+                              colors: [
+                                const Color(0xFF3B82F6).withOpacity(0.2),
+                                const Color(0xFF3B82F6).withOpacity(0.05),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildEnhancedLegendItem(
+                      const Color(0xFF10B981),
+                      'Petani',
+                      '',
+                    ),
+                    const SizedBox(width: 32),
+                    _buildEnhancedLegendItem(
+                      const Color(0xFF3B82F6),
+                      'Pembeli',
+                      '',
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
 
-          // User activity chart
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Aktivitas Pengguna Harian',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    height: 200,
-                    child: LineChart(
-                      LineChartData(
-                        gridData: const FlGridData(show: true),
-                        titlesData: FlTitlesData(
-                          bottomTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              getTitlesWidget: (value, meta) {
-                                const days = [
-                                  '1',
-                                  '5',
-                                  '10',
-                                  '15',
-                                  '20',
-                                  '25',
-                                  '30',
-                                ];
-                                if (value.toInt() < days.length) {
-                                  return Text(days[value.toInt()]);
-                                }
-                                return const Text('');
-                              },
+          // Enhanced Demographics Card
+          _buildEnhancedCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFEF4444).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.people_outline,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Jenis Pengguna Platform',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F2937),
+                              letterSpacing: 0.3,
                             ),
                           ),
-                          leftTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: true),
-                          ),
-                          topTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: false),
-                          ),
-                          rightTitles: const AxisTitles(
-                            sideTitles: SideTitles(showTitles: false),
-                          ),
-                        ),
-                        borderData: FlBorderData(show: true),
-                        lineBarsData: [
-                          LineChartBarData(
-                            spots: const [
-                              FlSpot(0, 420),
-                              FlSpot(1, 480),
-                              FlSpot(2, 510),
-                              FlSpot(3, 560),
-                              FlSpot(4, 600),
-                              FlSpot(5, 580),
-                              FlSpot(6, 540),
-                            ],
-                            isCurved: true,
-                            color: Colors.green,
-                            barWidth: 3,
-                          ),
-                          LineChartBarData(
-                            spots: const [
-                              FlSpot(0, 120),
-                              FlSpot(1, 145),
-                              FlSpot(2, 160),
-                              FlSpot(3, 180),
-                              FlSpot(4, 195),
-                              FlSpot(5, 210),
-                              FlSpot(6, 190),
-                            ],
-                            isCurved: true,
-                            color: Colors.blue,
-                            barWidth: 3,
+                          Text(
+                            'Distribusi kategori pengguna',
+                            style: TextStyle(
+                              color: Color(0xFF6B7280),
+                              fontSize: 14,
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildLegendItem(Colors.green, 'Petani'),
-                      const SizedBox(width: 32),
-                      _buildLegendItem(Colors.blue, 'Pembeli'),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // User demographics
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Jenis Pengguna Platform',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildDemographicItem('Petani', 0.65, Colors.green),
-                  _buildDemographicItem('Pembeli Industri', 0.15, Colors.blue),
-                  _buildDemographicItem('UMKM Pengolah', 0.12, Colors.orange),
-                  _buildDemographicItem('Pemerintah', 0.08, Colors.purple),
-                ],
-              ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                _buildEnhancedDemographicItem(
+                  'Petani',
+                  0.65,
+                  const Color(0xFF10B981),
+                ),
+                _buildEnhancedDemographicItem(
+                  'Pembeli Industri',
+                  0.15,
+                  const Color(0xFF3B82F6),
+                ),
+                _buildEnhancedDemographicItem(
+                  'UMKM Pengolah',
+                  0.12,
+                  const Color(0xFFF59E0B),
+                ),
+                _buildEnhancedDemographicItem(
+                  'Pemerintah',
+                  0.08,
+                  const Color(0xFF8B5CF6),
+                ),
+              ],
             ),
           ),
         ],
@@ -636,74 +1583,190 @@ class _ReportStatisticScreenState extends State<ReportStatisticScreen>
 
   Widget _buildRegionTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Produksi per Kecamatan',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildRegionItem('Samarang', 15600, 0.35, Colors.green),
-                  _buildRegionItem('Pasirwangi', 13200, 0.30, Colors.blue),
-                  _buildRegionItem('Leles', 9800, 0.22, Colors.orange),
-                  _buildRegionItem('Bayongbong', 4200, 0.09, Colors.purple),
-                  _buildRegionItem('Cilawu', 1500, 0.04, Colors.red),
-                ],
-              ),
+          // Enhanced Production by Region Card
+          _buildEnhancedCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF10B981), Color(0xFF059669)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF10B981).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.map_outlined,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Produksi per Kecamatan',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F2937),
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                          Text(
+                            'Volume produksi dalam kilogram',
+                            style: TextStyle(
+                              color: Color(0xFF6B7280),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                _buildEnhancedRegionItem(
+                  'Samarang',
+                  15600,
+                  0.35,
+                  const Color(0xFF10B981),
+                ),
+                _buildEnhancedRegionItem(
+                  'Pasirwangi',
+                  13200,
+                  0.30,
+                  const Color(0xFF3B82F6),
+                ),
+                _buildEnhancedRegionItem(
+                  'Leles',
+                  9800,
+                  0.22,
+                  const Color(0xFFF59E0B),
+                ),
+                _buildEnhancedRegionItem(
+                  'Bayongbong',
+                  4200,
+                  0.09,
+                  const Color(0xFF8B5CF6),
+                ),
+                _buildEnhancedRegionItem(
+                  'Cilawu',
+                  1500,
+                  0.04,
+                  const Color(0xFFEF4444),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
 
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Unit Penyuling Teraktif',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildMarketItem(
-                    'Penyuling Maju Jaya',
-                    'Samarang',
-                    1560,
-                    Icons.local_fire_department,
-                  ),
-                  _buildMarketItem(
-                    'CV Atsiri Lestari',
-                    'Pasirwangi',
-                    1320,
-                    Icons.local_fire_department,
-                  ),
-                  _buildMarketItem(
-                    'UD Wangi Garut',
-                    'Leles',
-                    980,
-                    Icons.local_fire_department,
-                  ),
-                  _buildMarketItem(
-                    'Penyuling Harapan',
-                    'Bayongbong',
-                    420,
-                    Icons.local_fire_department,
-                  ),
-                  _buildMarketItem(
-                    'Koperasi Tani Wangi',
-                    'Cilawu',
-                    150,
-                    Icons.local_fire_department,
-                  ),
-                ],
-              ),
+          // Enhanced Active Distillery Units Card
+          _buildEnhancedCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFF59E0B).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.local_fire_department_outlined,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Unit Penyuling Teraktif',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F2937),
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                          Text(
+                            'Berdasarkan volume produksi',
+                            style: TextStyle(
+                              color: Color(0xFF6B7280),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                _buildEnhancedMarketItem(
+                  'Penyuling Maju Jaya',
+                  'Samarang',
+                  1560,
+                  Icons.local_fire_department_outlined,
+                  const Color(0xFF10B981),
+                ),
+                _buildEnhancedMarketItem(
+                  'CV Atsiri Lestari',
+                  'Pasirwangi',
+                  1320,
+                  Icons.local_fire_department_outlined,
+                  const Color(0xFF3B82F6),
+                ),
+                _buildEnhancedMarketItem(
+                  'UD Wangi Garut',
+                  'Leles',
+                  980,
+                  Icons.local_fire_department_outlined,
+                  const Color(0xFFF59E0B),
+                ),
+                _buildEnhancedMarketItem(
+                  'Penyuling Harapan',
+                  'Bayongbong',
+                  420,
+                  Icons.local_fire_department_outlined,
+                  const Color(0xFF8B5CF6),
+                ),
+                _buildEnhancedMarketItem(
+                  'Koperasi Tani Wangi',
+                  'Cilawu',
+                  150,
+                  Icons.local_fire_department_outlined,
+                  const Color(0xFFEF4444),
+                ),
+              ],
             ),
           ),
         ],
@@ -711,50 +1774,64 @@ class _ReportStatisticScreenState extends State<ReportStatisticScreen>
     );
   }
 
-  Widget _buildStatCard(
+  // Enhanced Helper Widgets
+  Widget _buildEnhancedUserCard(
     String title,
     String value,
     IconData icon,
-    Color color,
-    String change,
-    bool isPositive,
+    LinearGradient gradient,
+    String period,
   ) {
-    return Card(
-      elevation: 3,
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: color, size: 32),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: gradient,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: gradient.colors.first.withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Icon(icon, color: Colors.white, size: 28),
             ),
+            const SizedBox(height: 16),
             Text(
               title,
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1F2937),
+                fontSize: 16,
+              ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  isPositive ? Icons.trending_up : Icons.trending_down,
-                  color: isPositive ? Colors.green : Colors.red,
-                  size: 16,
-                ),
-                Text(
-                  change,
-                  style: TextStyle(
-                    color: isPositive ? Colors.green : Colors.red,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+            const SizedBox(height: 8),
+            Text(
+              '$period: $value',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF374151),
+              ),
             ),
           ],
         ),
@@ -762,121 +1839,306 @@ class _ReportStatisticScreenState extends State<ReportStatisticScreen>
     );
   }
 
-  Widget _buildProductItem(
-    String name,
-    String price,
-    String sold,
-    IconData icon,
+  Widget _buildEnhancedLegendItem(
+    Color color,
+    String label,
+    String percentage,
   ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.grey[600]),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.w500)),
-                Text(
-                  price,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-          Text(sold, style: const TextStyle(fontWeight: FontWeight.w500)),
-        ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.3), width: 1),
       ),
-    );
-  }
-
-  Widget _buildLegendItem(Color color, String label) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(width: 16, height: 16, color: color),
-        const SizedBox(width: 8),
-        Text(label, style: const TextStyle(fontSize: 12)),
-      ],
-    );
-  }
-
-  Widget _buildDemographicItem(String label, double percentage, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(flex: 2, child: Text(label)),
-          Expanded(
-            flex: 3,
-            child: LinearProgressIndicator(
-              value: percentage,
-              backgroundColor: Colors.grey[300],
-              valueColor: AlwaysStoppedAnimation<Color>(color),
+          Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(6),
             ),
           ),
           const SizedBox(width: 8),
-          Text('${(percentage * 100).toInt()}%'),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+          if (percentage.isNotEmpty) ...[
+            const SizedBox(width: 4),
+            Text(
+              percentage,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: color.withOpacity(0.8),
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildRegionItem(
+  Widget _buildEnhancedDemographicItem(
+    String label,
+    double percentage,
+    Color color,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.withOpacity(0.1), width: 1),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF374151),
+                fontSize: 15,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Container(
+              height: 8,
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: percentage,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [color, color.withOpacity(0.8)],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              '${(percentage * 100).toInt()}%',
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEnhancedRegionItem(
     String region,
     int production,
     double percentage,
     Color color,
   ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Expanded(flex: 2, child: Text(region)),
-          Expanded(
-            flex: 2,
-            child: LinearProgressIndicator(
-              value: percentage,
-              backgroundColor: Colors.grey[300],
-              valueColor: AlwaysStoppedAnimation<Color>(color),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text('$production kg'),
-        ],
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.withOpacity(0.1), width: 1),
       ),
-    );
-  }
-
-  Widget _buildMarketItem(
-    String name,
-    String location,
-    int production,
-    IconData icon,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icon, color: Colors.grey[600]),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(Icons.location_on_outlined, color: color, size: 20),
+          ),
           const SizedBox(width: 12),
           Expanded(
+            flex: 2,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.w500)),
                 Text(
-                  location,
+                  region,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF374151),
+                    fontSize: 15,
+                  ),
+                ),
+                Text(
+                  'Kecamatan',
                   style: TextStyle(color: Colors.grey[600], fontSize: 12),
                 ),
               ],
             ),
           ),
-          Text(
-            '$production kg',
-            style: const TextStyle(fontWeight: FontWeight.w500),
+          Expanded(
+            flex: 2,
+            child: Container(
+              height: 6,
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(3),
+              ),
+              child: FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: percentage,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [color, color.withOpacity(0.8)],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              '$production kg',
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEnhancedMarketItem(
+    String name,
+    String location,
+    int production,
+    IconData icon,
+    Color color,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.withOpacity(0.1), width: 1),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF374151),
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.location_on_outlined,
+                      size: 14,
+                      color: Colors.grey[600],
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      location,
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: color.withOpacity(0.3), width: 1),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  '$production kg',
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  'produksi',
+                  style: TextStyle(
+                    color: color.withOpacity(0.7),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
