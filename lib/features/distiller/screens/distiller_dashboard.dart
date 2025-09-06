@@ -740,7 +740,9 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard>
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      // --- PERBAIKAN DI SINI ---
+      // Mengurangi padding horizontal agar total lebar tidak melebihi layar
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),

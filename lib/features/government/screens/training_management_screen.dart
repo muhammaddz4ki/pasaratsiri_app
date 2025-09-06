@@ -590,31 +590,54 @@ class _TrainingManagementScreenState extends State<TrainingManagementScreen>
     Function(String?) onChanged,
     IconData icon,
   ) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: DropdownButtonFormField<String>(
-        value: value,
-        decoration: InputDecoration(
-          labelText: label,
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 8,
-          ),
-          prefixIcon: Icon(icon, size: 18, color: Colors.grey[600]),
+    return PopupMenuButton<String>(
+      onSelected: onChanged, // Ini akan memanggil setState di parent
+      itemBuilder: (BuildContext context) {
+        // Membuat daftar item untuk menu popup
+        return items.map((String item) {
+          return PopupMenuItem<String>(value: item, child: Text(item));
+        }).toList();
+      },
+      // Ini adalah tampilan tombolnya, kita gunakan UI custom kita yang bebas overflow
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        items: items.map((String item) {
-          return DropdownMenuItem<String>(
-            value: item,
-            child: Text(item, style: const TextStyle(fontSize: 14)),
-          );
-        }).toList(),
-        onChanged: onChanged,
-        dropdownColor: Colors.white,
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.grey[600]),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label, // Label seperti 'Kategori' atau 'Status'
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  Text(
+                    value, // Nilai yang terpilih saat ini
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_drop_down, color: Colors.grey),
+          ],
+        ),
       ),
     );
   }
@@ -677,6 +700,7 @@ class _TrainingManagementScreenState extends State<TrainingManagementScreen>
 
     final formattedDate = DateFormat(
       'd MMMM yyyy',
+      'id_ID',
     ).format(training.date.toDate());
     final progress = training.maxParticipants > 0
         ? training.currentParticipants / training.maxParticipants
@@ -1198,6 +1222,7 @@ class _TrainingManagementScreenState extends State<TrainingManagementScreen>
                               'Tanggal',
                               DateFormat(
                                 'd MMMM yyyy',
+                                'id_ID',
                               ).format(training.date.toDate()),
                               Icons.calendar_today_rounded,
                             ),
@@ -1696,7 +1721,10 @@ class _TrainingManagementScreenState extends State<TrainingManagementScreen>
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
-        _dateController.text = DateFormat('d MMMM yyyy').format(picked);
+        _dateController.text = DateFormat(
+          'd MMMM yyyy',
+          'id_ID',
+        ).format(picked);
       });
     }
   }

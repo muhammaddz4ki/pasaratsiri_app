@@ -239,6 +239,14 @@ class _ReportStatisticScreenState extends State<ReportStatisticScreen>
   }
 
   Widget _buildSummaryTab() {
+    // --- PERBAIKAN DI SINI ---
+    // Mengganti GridView dengan Wrap untuk layout yang lebih fleksibel.
+
+    // Hitung lebar setiap item agar bisa menjadi 2 kolom.
+    final screenWidth = MediaQuery.of(context).size.width;
+    // (Lebar layar) - (padding kiri & kanan 20*2) - (spasi tengah 16)
+    final itemWidth = (screenWidth - 40 - 16) / 2;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: FadeTransition(
@@ -246,60 +254,69 @@ class _ReportStatisticScreenState extends State<ReportStatisticScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Enhanced Stats Cards
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              childAspectRatio: 1.4,
+            // Menggunakan Wrap
+            Wrap(
+              spacing: 16, // Jarak horizontal antar kartu
+              runSpacing: 16, // Jarak vertikal antar baris kartu
               children: [
-                _buildEnhancedStatCard(
-                  'Total Petani',
-                  '4,027',
-                  Icons.agriculture_outlined,
-                  const LinearGradient(
-                    colors: [Color(0xFF10B981), Color(0xFF059669)],
+                // Setiap kartu dibungkus SizedBox untuk mengatur lebarnya.
+                SizedBox(
+                  width: itemWidth,
+                  child: _buildEnhancedStatCard(
+                    'Total Petani',
+                    '4,027',
+                    Icons.agriculture_outlined,
+                    const LinearGradient(
+                      colors: [Color(0xFF10B981), Color(0xFF059669)],
+                    ),
+                    '+5%',
+                    true,
                   ),
-                  '+5%',
-                  true,
                 ),
-                _buildEnhancedStatCard(
-                  'Total Pembeli',
-                  '156',
-                  Icons.business_outlined,
-                  const LinearGradient(
-                    colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                SizedBox(
+                  width: itemWidth,
+                  child: _buildEnhancedStatCard(
+                    'Total Pembeli',
+                    '156',
+                    Icons.business_outlined,
+                    const LinearGradient(
+                      colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                    ),
+                    '+12%',
+                    true,
                   ),
-                  '+12%',
-                  true,
                 ),
-                _buildEnhancedStatCard(
-                  'Transaksi Harian',
-                  '42',
-                  Icons.receipt_long_outlined,
-                  const LinearGradient(
-                    colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                SizedBox(
+                  width: itemWidth,
+                  child: _buildEnhancedStatCard(
+                    'Transaksi Harian',
+                    '42',
+                    Icons.receipt_long_outlined,
+                    const LinearGradient(
+                      colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                    ),
+                    '+8%',
+                    true,
                   ),
-                  '+8%',
-                  true,
                 ),
-                _buildEnhancedStatCard(
-                  'Sertifikasi Aktif',
-                  '33',
-                  Icons.verified_outlined,
-                  const LinearGradient(
-                    colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+                SizedBox(
+                  width: itemWidth,
+                  child: _buildEnhancedStatCard(
+                    'Sertifikasi Aktif',
+                    '33',
+                    Icons.verified_outlined,
+                    const LinearGradient(
+                      colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+                    ),
+                    '+15%',
+                    true,
                   ),
-                  '+15%',
-                  true,
                 ),
               ],
             ),
             const SizedBox(height: 24),
 
-            // Enhanced Chart Card
+            // Enhanced Chart Card (tidak berubah)
             _buildEnhancedCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -484,8 +501,6 @@ class _ReportStatisticScreenState extends State<ReportStatisticScreen>
               ),
             ),
             const SizedBox(height: 20),
-
-            // Enhanced Top Products Card
             _buildEnhancedCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -610,7 +625,9 @@ class _ReportStatisticScreenState extends State<ReportStatisticScreen>
           borderRadius: BorderRadius.circular(20),
           onTap: () {},
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(
+              16,
+            ), // Mengurangi padding dari 20 ke 16
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
