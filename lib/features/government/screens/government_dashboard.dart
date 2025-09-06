@@ -360,10 +360,10 @@ class _PemerintahDashboardState extends State<PemerintahDashboard>
                           ),
                         ],
                       ),
-                      child: CircleAvatar(
+                      child: const CircleAvatar(
                         radius: 30,
                         backgroundColor: Colors.transparent,
-                        child: const Icon(
+                        child: Icon(
                           Icons.policy,
                           size: 32,
                           color: Colors.white,
@@ -447,7 +447,9 @@ class _PemerintahDashboardState extends State<PemerintahDashboard>
                 physics: const NeverScrollableScrollPhysics(),
                 mainAxisSpacing: 20,
                 crossAxisSpacing: 20,
-                childAspectRatio: 1.1,
+                // --- PERUBAIKAN DI SINI ---
+                // Mengubah rasio menjadi 1.0 agar kartu berbentuk persegi dan punya cukup ruang vertikal.
+                childAspectRatio: 1.0,
                 children: [
                   _buildEnhancedMenuCard(
                     title: 'Kelola Sertifikasi',
@@ -582,7 +584,9 @@ class _PemerintahDashboardState extends State<PemerintahDashboard>
           onTap: onTap,
           borderRadius: BorderRadius.circular(20),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(
+              16,
+            ), // Padding disesuaikan agar tidak terlalu besar
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -606,7 +610,7 @@ class _PemerintahDashboardState extends State<PemerintahDashboard>
                   ),
                   child: Icon(icon, size: 32, color: Colors.white),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12), // Spasi dikurangi sedikit
                 Text(
                   title,
                   textAlign: TextAlign.center,
@@ -616,6 +620,8 @@ class _PemerintahDashboardState extends State<PemerintahDashboard>
                     color: Colors.grey[700],
                     letterSpacing: 0.3,
                   ),
+                  maxLines: 2, // Memastikan teks bisa 2 baris
+                  overflow: TextOverflow.ellipsis, // Menghindari overflow teks
                 ),
               ],
             ),
@@ -667,14 +673,10 @@ class _PemerintahDashboardState extends State<PemerintahDashboard>
                   ),
                   shape: BoxShape.circle,
                 ),
-                child: CircleAvatar(
+                child: const CircleAvatar(
                   radius: 60,
                   backgroundColor: Colors.transparent,
-                  child: const Icon(
-                    Icons.policy,
-                    size: 64,
-                    color: Colors.white,
-                  ),
+                  child: Icon(Icons.policy, size: 64, color: Colors.white),
                 ),
               ),
             ),
