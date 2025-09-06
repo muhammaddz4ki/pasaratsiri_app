@@ -56,6 +56,10 @@ class _FarmerLocationsScreenState extends State<FarmerLocationsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // KARTU LOKASI PENGGUNA DITAMBAHKAN DI SINI
+              _buildUserLocationCard(),
+              const SizedBox(height: 24),
+
               const Text(
                 'Peta Lokasi Petani Terdekat',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -72,6 +76,42 @@ class _FarmerLocationsScreenState extends State<FarmerLocationsScreen> {
               const SizedBox(height: 24),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  // WIDGET KARTU LOKASI PENGGUNA (BARU DITAMBAHKAN)
+  Widget _buildUserLocationCard() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: themeColor.withAlpha(128)),
+      ),
+      child: const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            Icon(Icons.location_on, color: Colors.red, size: 28),
+            SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Lokasi anda sesuai alamat',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Kp.Sukadana, Blubur Limbangan, ...',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

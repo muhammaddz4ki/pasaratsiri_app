@@ -5,6 +5,7 @@ import 'package:pasaratsiri_app/features/farmer/screens/training_list_screen.dar
 import 'package:pasaratsiri_app/features/farmer/screens/farmer_order_list_screen.dart';
 import 'forum_list_screen.dart';
 import 'package:pasaratsiri_app/features/farmer/screens/distiller_locations_screen.dart';
+import 'package:pasaratsiri_app/features/farmer/screens/farmer_analytics_screen.dart';
 
 class FarmerDashboard extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -788,6 +789,19 @@ class _FarmerDashboardState extends State<FarmerDashboard>
                   context,
                   MaterialPageRoute(
                     builder: (context) => const ForumListScreen(),
+                  ),
+                );
+              },
+            ),
+            _buildEnhancedCard(
+              icon: Icons.analytics_outlined,
+              title: 'Analisis',
+              color: const Color(0xFF1565C0), // Biru Tua
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const FarmerAnalyticsScreen(),
                   ),
                 );
               },
