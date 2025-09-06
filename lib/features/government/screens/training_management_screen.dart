@@ -1072,80 +1072,86 @@ class _TrainingManagementScreenState extends State<TrainingManagementScreen>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 500),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.white, Colors.grey[50]!],
+          // Use ClipRRect to ensure all content respects the rounded corners
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              constraints: const BoxConstraints(
+                maxWidth: 500,
+                maxHeight: 650,
+              ), // Set a max height
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Colors.white, Colors.grey[50]!],
+                ),
               ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header with image
-                if (training.imageUrl.isNotEmpty)
-                  ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
-                    ),
-                    child: Stack(
-                      children: [
-                        Image.network(
-                          training.imageUrl,
-                          height: 200,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                        Positioned(
-                          top: 16,
-                          right: 16,
-                          child: GestureDetector(
-                            onTap: () => Navigator.pop(context),
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.5),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Icon(
-                                Icons.close_rounded,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                // Content
-                Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Title and Category
-                      Row(
+              child: Column(
+                mainAxisSize:
+                    MainAxisSize.min, // Important for Column in Dialog
+                children: [
+                  // 1. KUNCI UTAMA: Area konten yang bisa di-scroll
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
+                          // Header with image
+                          if (training.imageUrl.isNotEmpty)
+                            Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(20),
+                                    topRight: Radius.circular(20),
+                                  ),
+                                  child: Image.network(
+                                    training.imageUrl,
+                                    height: 200,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const SizedBox(
+                                              height: 200,
+                                              child: Icon(
+                                                Icons.broken_image,
+                                                color: Colors.grey,
+                                                size: 48,
+                                              ),
+                                            ),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 16,
+                                  right: 16,
+                                  child: GestureDetector(
+                                    onTap: () => Navigator.pop(context),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.5),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.close_rounded,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                          // Content
+                          Padding(
+                            padding: const EdgeInsets.all(24),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  training.title,
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    height: 1.3,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
+                                // Title and Category
                                 Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 12,
@@ -1167,122 +1173,137 @@ class _TrainingManagementScreenState extends State<TrainingManagementScreen>
                                     ),
                                   ),
                                 ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  training.title,
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1.3,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+
+                                // Description
+                                if (training.description.isNotEmpty)
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[50],
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: Colors.grey[200]!,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      training.description,
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.grey[700],
+                                        height: 1.5,
+                                      ),
+                                    ),
+                                  ),
+
+                                const SizedBox(height: 20),
+
+                                // Training Details Grid
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: Colors.grey[200]!,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.05),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      _buildDetailItem(
+                                        'Penyelenggara',
+                                        training.organizer,
+                                        Icons.person_rounded,
+                                      ),
+                                      const Divider(height: 24),
+                                      _buildDetailItem(
+                                        'Tanggal',
+                                        DateFormat(
+                                          'd MMMM yyyy',
+                                          'id_ID',
+                                        ).format(training.date.toDate()),
+                                        Icons.calendar_today_rounded,
+                                      ),
+                                      const Divider(height: 24),
+                                      _buildDetailItem(
+                                        'Waktu',
+                                        training.time,
+                                        Icons.access_time_rounded,
+                                      ),
+                                      const Divider(height: 24),
+                                      _buildDetailItem(
+                                        'Lokasi',
+                                        training.location,
+                                        Icons.location_on_rounded,
+                                      ),
+                                      const Divider(height: 24),
+                                      _buildDetailItem(
+                                        'Kuota Peserta',
+                                        '${training.currentParticipants}/${training.maxParticipants} peserta',
+                                        Icons.people_rounded,
+                                      ),
+                                      const Divider(height: 24),
+                                      _buildDetailItem(
+                                        'Status',
+                                        training.status,
+                                        Icons.info_rounded,
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ],
                             ),
                           ),
                         ],
                       ),
-
-                      const SizedBox(height: 20),
-
-                      // Description
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey[200]!),
-                        ),
-                        child: Text(
-                          training.description,
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.grey[700],
-                            height: 1.5,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // Training Details Grid
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey[200]!),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            _buildDetailItem(
-                              'Penyelenggara',
-                              training.organizer,
-                              Icons.person_rounded,
-                            ),
-                            const Divider(height: 24),
-                            _buildDetailItem(
-                              'Tanggal',
-                              DateFormat(
-                                'd MMMM yyyy',
-                                'id_ID',
-                              ).format(training.date.toDate()),
-                              Icons.calendar_today_rounded,
-                            ),
-                            const Divider(height: 24),
-                            _buildDetailItem(
-                              'Waktu',
-                              training.time,
-                              Icons.access_time_rounded,
-                            ),
-                            const Divider(height: 24),
-                            _buildDetailItem(
-                              'Lokasi',
-                              training.location,
-                              Icons.location_on_rounded,
-                            ),
-                            const Divider(height: 24),
-                            _buildDetailItem(
-                              'Kuota Peserta',
-                              '${training.currentParticipants}/${training.maxParticipants} peserta',
-                              Icons.people_rounded,
-                            ),
-                            const Divider(height: 24),
-                            _buildDetailItem(
-                              'Status',
-                              training.status,
-                              Icons.info_rounded,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Close Button
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey[600],
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 4,
-                          ),
-                          child: const Text(
-                            'Tutup',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
+
+                  // 2. Tombol "Tutup" dibuat tetap di bawah (sticky)
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue[700],
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          'Tutup',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -1290,35 +1311,27 @@ class _TrainingManagementScreenState extends State<TrainingManagementScreen>
     );
   }
 
-  Widget _buildDetailItem(String label, String value, IconData icon) {
+  // You will also need the helper widget `_buildDetailItem`.
+  // Make sure it is available within the same class.
+  Widget _buildDetailItem(String title, String value, IconData icon) {
     return Row(
       children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.blue[50],
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, size: 18, color: Colors.blue[600]),
-        ),
-        const SizedBox(width: 12),
+        Icon(icon, color: Colors.grey[500], size: 24),
+        const SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w500,
-                ),
+                title,
+                style: TextStyle(color: Colors.grey[600], fontSize: 13),
               ),
               const SizedBox(height: 2),
               Text(
                 value,
                 style: const TextStyle(
-                  fontSize: 14,
+                  color: Colors.black87,
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
                 ),
               ),
