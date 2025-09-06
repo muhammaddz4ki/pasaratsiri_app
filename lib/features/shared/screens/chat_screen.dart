@@ -1,6 +1,9 @@
+// lib/features/shared/screens/chat_screen.dart
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // <-- BARIS INI DITAMBAHKAN
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart'; // <-- Import package intl
 import 'package:pasaratsiri_app/features/shared/services/chat_service.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -23,13 +26,16 @@ class _ChatScreenState extends State<ChatScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final ScrollController _scrollController = ScrollController();
 
+  // --- PERUBAHAN: Palet Warna Sesuai Tema ---
+  static const Color primaryColor = Color(0xFF10B981);
+  static const Color secondaryColor = Color(0xFF14B8A6);
+  static const Color darkColor = Color(0xFF047857);
+  static const Color ultraLightColor = Color(0xFFECFDF5);
+
   void _sendMessage() async {
     if (_messageController.text.trim().isNotEmpty) {
-      // Salin teks dan bersihkan field input secepatnya untuk responsivitas UI
       String messageText = _messageController.text;
       _messageController.clear();
-
-      // Kirim pesan menggunakan service
       await _chatService.sendMessage(widget.receiverId, messageText);
     }
   }
@@ -44,21 +50,37 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // --- PERUBAHAN: AppBar Disesuaikan ---
       appBar: AppBar(
-        title: Text(widget.receiverName),
-        backgroundColor: Colors.green.shade700,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: darkColor,
         elevation: 1,
+        shadowColor: primaryColor.withOpacity(0.2),
+        title: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: primaryColor,
+              foregroundColor: Colors.white,
+              child: Text(
+                widget.receiverName.isNotEmpty
+                    ? widget.receiverName[0].toUpperCase()
+                    : '?',
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              widget.receiverName,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+          ],
+        ),
       ),
+      // --- PERUBAHAN: Latar Belakang Body ---
       body: Container(
-        // Memberi warna latar belakang yang lembut
-        color: Colors.grey.shade50,
+        color: ultraLightColor,
         child: Column(
           children: [
-            // Expanded akan membuat daftar pesan memenuhi sisa ruang
             Expanded(child: _buildMessageList()),
-
-            // Input untuk mengetik pesan
             _buildMessageInput(),
           ],
         ),
@@ -66,19 +88,17 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  // Widget untuk membangun daftar pesan dari Firestore
   Widget _buildMessageList() {
     return StreamBuilder<QuerySnapshot>(
-      // Mendengarkan pesan secara real-time dari ChatService
       stream: _chatService.getMessages(widget.receiverId),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return const Center(
-            child: Text("Gagal memuat pesan. Silakan coba lagi."),
-          );
+          return const Center(child: Text("Gagal memuat pesan."));
         }
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+            child: CircularProgressIndicator(color: primaryColor),
+          );
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Center(
@@ -104,7 +124,6 @@ class _ChatScreenState extends State<ChatScreen> {
           );
         }
 
-        // Fungsi ini akan otomatis scroll ke bawah setiap kali ada pesan baru
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (_scrollController.hasClients) {
             _scrollController.jumpTo(
@@ -115,7 +134,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
         return ListView(
           controller: _scrollController,
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
           children: snapshot.data!.docs
               .map((doc) => _buildMessageItem(doc))
               .toList(),
@@ -124,63 +143,93 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  // Widget untuk membangun satu gelembung pesan (chat bubble)
+  // --- PERUBAHAN: Tampilan Bubble Chat Diperbarui Total ---
   Widget _buildMessageItem(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-    // Cek apakah pengirim pesan adalah pengguna saat ini
     bool isMe = data['senderId'] == _auth.currentUser!.uid;
 
+    // Format timestamp
+    String formattedTime = '';
+    if (data['timestamp'] != null) {
+      Timestamp ts = data['timestamp'] as Timestamp;
+      formattedTime = DateFormat('HH:mm').format(ts.toDate());
+    }
+
     return Align(
-      // Atur posisi bubble: kanan untuk 'saya', kiri untuk 'orang lain'
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-        margin: const EdgeInsets.symmetric(vertical: 4),
+        margin: const EdgeInsets.symmetric(vertical: 5),
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.75,
         ),
         decoration: BoxDecoration(
-          // Atur warna bubble
-          color: isMe ? Colors.green.shade600 : Colors.white,
-          // Atur sudut bubble agar terlihat seperti aplikasi chat pada umumnya
+          gradient: isMe
+              ? const LinearGradient(
+                  colors: [primaryColor, secondaryColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          color: isMe ? null : Colors.white,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(20),
             topRight: const Radius.circular(20),
-            bottomLeft: isMe ? const Radius.circular(20) : Radius.zero,
-            bottomRight: isMe ? Radius.zero : const Radius.circular(20),
+            bottomLeft: isMe
+                ? const Radius.circular(20)
+                : const Radius.circular(4),
+            bottomRight: isMe
+                ? const Radius.circular(4)
+                : const Radius.circular(20),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              spreadRadius: 1,
-              blurRadius: 3,
-              offset: const Offset(0, 2),
+              color: primaryColor.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Text(
-          data['text'],
-          style: TextStyle(
-            fontSize: 16,
-            color: isMe ? Colors.white : Colors.black87,
-          ),
+        child: Column(
+          crossAxisAlignment: isMe
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
+          children: [
+            Text(
+              data['text'],
+              style: TextStyle(
+                fontSize: 16,
+                color: isMe ? Colors.white : Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              formattedTime,
+              style: TextStyle(
+                fontSize: 11,
+                color: isMe
+                    ? Colors.white.withOpacity(0.8)
+                    : Colors.grey.shade600,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  // Widget untuk membangun field input dan tombol kirim
+  // --- PERUBAHAN: Tampilan Input Diperbarui ---
   Widget _buildMessageInput() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
+            color: Colors.black.withOpacity(0.05),
             spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, -1),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
           ),
         ],
       ),
@@ -194,21 +243,33 @@ class _ChatScreenState extends State<ChatScreen> {
                 decoration: InputDecoration(
                   hintText: 'Ketik pesan...',
                   filled: true,
-                  fillColor: Colors.grey.shade100,
+                  fillColor: ultraLightColor,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 20,
                     vertical: 10,
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide.none,
+                    borderSide: BorderSide(
+                      color: primaryColor.withOpacity(0.5),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide(
+                      color: primaryColor.withOpacity(0.3),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: primaryColor),
                   ),
                 ),
               ),
             ),
             const SizedBox(width: 8),
             Material(
-              color: Colors.green.shade600,
+              color: primaryColor,
               borderRadius: BorderRadius.circular(30),
               child: InkWell(
                 borderRadius: BorderRadius.circular(30),

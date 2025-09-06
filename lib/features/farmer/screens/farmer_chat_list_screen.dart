@@ -148,39 +148,6 @@ class FarmerChatListScreen extends StatelessWidget {
           return Column(
             children: [
               // Header sebagai pengganti AppBar
-              Container(
-                padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF047857), // Emerald-700
-                      Color(0xFF10B981), // Emerald-500
-                      Color(0xFF14B8A6), // Teal-500
-                    ],
-                  ),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(20),
-                    bottomRight: Radius.circular(20),
-                  ),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.message_rounded, color: Colors.white, size: 28),
-                    SizedBox(width: 12),
-                    Text(
-                      'Pesan',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.all(16),

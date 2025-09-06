@@ -1,3 +1,5 @@
+// product_model.dart
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Product {
@@ -7,6 +9,7 @@ class Product {
   final String description;
   final String imageUrl;
   final String weight;
+  final String category; // <-- TAMBAHKAN INI
   final String sellerId;
   final String sellerName;
   final Timestamp createdAt;
@@ -18,6 +21,7 @@ class Product {
     required this.description,
     required this.imageUrl,
     required this.weight,
+    required this.category,
     required this.sellerId,
     required this.sellerName,
     required this.createdAt,
@@ -32,6 +36,7 @@ class Product {
       description: data['description'] ?? '',
       imageUrl: data['imageUrl'] ?? '',
       weight: data['weight'] ?? '',
+      category: data['category'] ?? 'Lainnya',
       sellerId: data['sellerId'] ?? '',
       sellerName: data['sellerName'] ?? '',
       createdAt: data['createdAt'] ?? Timestamp.now(),

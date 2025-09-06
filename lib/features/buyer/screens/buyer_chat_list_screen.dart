@@ -12,104 +12,132 @@ class BuyerChatListScreen extends StatelessWidget {
     final ChatService chatService = ChatService();
     final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
-    return StreamBuilder<QuerySnapshot>(
-      stream: chatService.getChatRooms(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return const Center(child: Text("Gagal memuat daftar pesan."));
-        }
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.message_outlined,
-                  size: 80,
-                  color: Colors.grey.shade400,
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  "Belum Ada Pesan",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey,
+    // --- DITAMBAHKAN ---
+    // Tambahkan Scaffold sebagai widget utama untuk struktur halaman
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Pesan'),
+        backgroundColor: const Color(
+          0xFF047857,
+        ), // Warna yang konsisten dengan tema aplikasi Anda
+        foregroundColor: Colors.white,
+        elevation: 1,
+      ),
+      // --- AKHIR PENAMBAHAN ---
+
+      // StreamBuilder Anda sekarang menjadi body dari Scaffold
+      body: StreamBuilder<QuerySnapshot>(
+        stream: chatService.getChatRooms(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return const Center(child: Text("Gagal memuat daftar pesan."));
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.message_outlined,
+                    size: 80,
+                    color: Colors.grey.shade400,
                   ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  "Saat Anda menghubungi penjual,\npesan akan muncul di sini.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ],
-            ),
-          );
-        }
-
-        var chatDocs = snapshot.data!.docs;
-
-        return ListView.builder(
-          itemCount: chatDocs.length,
-          itemBuilder: (context, index) {
-            var chatData = chatDocs[index].data() as Map<String, dynamic>;
-            List<dynamic> participants = chatData['participants'];
-            String otherUserId = participants.firstWhere(
-              (id) => id != currentUserId,
-            );
-
-            Map<String, dynamic> participantNames =
-                chatData['participantNames'];
-            String otherUserName = participantNames[otherUserId] ?? 'Penjual';
-
-            String lastMessage = chatData['lastMessage'] ?? '';
-
-            return Card(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Belum Ada Pesan",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "Saat Anda menghubungi penjual,\npesan akan muncul di sini.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
               ),
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.green.shade100,
-                  child: Text(
-                    otherUserName.isNotEmpty
-                        ? otherUserName[0].toUpperCase()
-                        : 'P',
-                    style: TextStyle(color: Colors.green.shade800),
-                  ),
+            );
+          }
+
+          var chatDocs = snapshot.data!.docs;
+
+          return ListView.builder(
+            padding: const EdgeInsets.only(
+              top: 8,
+            ), // Memberi sedikit jarak dari AppBar
+            itemCount: chatDocs.length,
+            itemBuilder: (context, index) {
+              var chatData = chatDocs[index].data() as Map<String, dynamic>;
+              List<dynamic> participants = chatData['participants'];
+              String otherUserId = participants.firstWhere(
+                (id) => id != currentUserId,
+              );
+
+              Map<String, dynamic> participantNames =
+                  chatData['participantNames'];
+              String otherUserName = participantNames[otherUserId] ?? 'Penjual';
+
+              String lastMessage = chatData['lastMessage'] ?? '';
+
+              return Card(
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ), // Sedikit penyesuaian margin
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
                 ),
-                title: Text(
-                  otherUserName,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(
-                  lastMessage,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ChatScreen(
-                        receiverId: otherUserId,
-                        receiverName: otherUserName,
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ), // Padding di dalam ListTile
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.green.shade100,
+                    child: Text(
+                      otherUserName.isNotEmpty
+                          ? otherUserName[0].toUpperCase()
+                          : 'P',
+                      style: TextStyle(
+                        color: Colors.green.shade800,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  );
-                },
-              ),
-            );
-          },
-        );
-      },
-    );
+                  ),
+                  title: Text(
+                    otherUserName,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    lastMessage,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChatScreen(
+                          receiverId: otherUserId,
+                          receiverName: otherUserName,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+          );
+        },
+      ),
+    ); // <-- Kurung tutup untuk Scaffold
   }
 }

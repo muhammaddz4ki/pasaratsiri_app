@@ -12,13 +12,13 @@ class ProductService {
     return _auth.currentUser;
   }
 
-  // UBAH FUNGSI addProduct UNTUK MENERIMA STRING imageUrl
   Future<String?> addProduct({
     required String name,
     required double price,
     required String description,
     required String weight,
-    required String imageUrl, // <- Diubah dari File ke String
+    required String imageUrl,
+    required String category, // <-- TAMBAHKAN INI
   }) async {
     try {
       User? currentUser = getCurrentUser();
@@ -26,13 +26,13 @@ class ProductService {
         return "Anda harus login untuk menambah produk.";
       }
 
-      // Simpan data produk ke Firestore dengan URL yang diinput manual
       await _firestore.collection('products').add({
         'name': name,
         'price': price,
         'description': description,
-        'imageUrl': imageUrl, // <- Gunakan imageUrl dari parameter
+        'imageUrl': imageUrl,
         'weight': weight,
+        'category': category, // <-- TAMBAHKAN INI
         'sellerId': currentUser.uid,
         'sellerName': currentUser.displayName ?? 'Petani',
         'createdAt': Timestamp.now(),
@@ -71,6 +71,7 @@ class ProductService {
     required String description,
     required String weight,
     required String imageUrl,
+    required String category,
   }) async {
     try {
       await _firestore.collection('products').doc(productId).update({
@@ -79,6 +80,7 @@ class ProductService {
         'description': description,
         'weight': weight,
         'imageUrl': imageUrl,
+        'category': category,
       });
       return null;
     } on FirebaseException catch (e) {
@@ -86,7 +88,6 @@ class ProductService {
     }
   }
 
-  // --- FUNGSI BARU: HAPUS PRODUK ---
   Future<String?> deleteProduct(String productId) async {
     try {
       await _firestore.collection('products').doc(productId).delete();

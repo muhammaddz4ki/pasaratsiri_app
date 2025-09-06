@@ -3,11 +3,11 @@ import 'package:pasaratsiri_app/features/auth/services/auth_service.dart';
 import 'package:pasaratsiri_app/features/distiller/screens/distillation_input_screen.dart';
 import 'package:pasaratsiri_app/features/distiller/screens/product_distribution_screen.dart';
 import 'package:pasaratsiri_app/features/distiller/screens/product_quality_screen.dart';
-// New Feature Imports
 import 'package:pasaratsiri_app/features/distiller/screens/analytics_screen.dart';
 import 'package:pasaratsiri_app/features/distiller/screens/inventory_screen.dart';
 import 'package:pasaratsiri_app/features/distiller/screens/notification_screen.dart';
 import 'package:pasaratsiri_app/features/distiller/screens/settings_screen.dart';
+import 'package:pasaratsiri_app/features/distiller/screens/farmer_locations_screen.dart';
 
 class UnitPenyulinganDashboard extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -20,7 +20,7 @@ class UnitPenyulinganDashboard extends StatefulWidget {
 
 class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard>
     with TickerProviderStateMixin {
-  int _selectedIndex = 0;
+  int _selectedIndex = 2; // Default to Home
   late final List<Widget> _pages;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -38,8 +38,9 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard>
     _animationController.forward();
 
     _pages = <Widget>[
-      _buildHomeScreen(context),
       _buildAnalyticsScreen(context),
+      const FarmerLocationsScreen(),
+      _buildHomeScreen(context),
       _buildNotificationScreen(context),
       _buildProfileScreen(context),
     ];
@@ -63,7 +64,7 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFFFAF5), // Orange-25 background
-      appBar: _selectedIndex != 3
+      appBar: _selectedIndex != 4
           ? AppBar(
               title: Text(
                 _getAppBarTitle(),
@@ -168,21 +169,18 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard>
             stops: [0.0, 0.3, 0.7, 1.0],
           ),
           boxShadow: [
-            // Primary orange shadow
             BoxShadow(
               color: const Color(0xFFF97316).withOpacity(0.25),
               blurRadius: 25,
               spreadRadius: -5,
               offset: const Offset(0, 15),
             ),
-            // Deep shadow for depth
             BoxShadow(
               color: Colors.black.withOpacity(0.08),
               blurRadius: 20,
               spreadRadius: -8,
               offset: const Offset(0, 8),
             ),
-            // Side shadows for 3D effect
             BoxShadow(
               color: const Color(0xFFF97316).withOpacity(0.1),
               blurRadius: 15,
@@ -195,7 +193,6 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard>
               spreadRadius: -10,
               offset: const Offset(5, 0),
             ),
-            // Inner glow effect
             BoxShadow(
               color: Colors.white.withOpacity(0.9),
               blurRadius: 10,
@@ -266,14 +263,16 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard>
                           : null,
                     ),
                     child: Icon(
-                      _selectedIndex == 0 ? Icons.home : Icons.home_outlined,
+                      _selectedIndex == 0
+                          ? Icons.analytics
+                          : Icons.analytics_outlined,
                       size: 26,
                       color: _selectedIndex == 0
                           ? Colors.white
                           : const Color(0xFF9CA3AF),
                     ),
                   ),
-                  label: "Home",
+                  label: "Analitik",
                 ),
                 BottomNavigationBarItem(
                   icon: Container(
@@ -300,69 +299,42 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard>
                           : null,
                     ),
                     child: Icon(
-                      _selectedIndex == 1
-                          ? Icons.analytics
-                          : Icons.analytics_outlined,
+                      _selectedIndex == 1 ? Icons.map : Icons.map_outlined,
                       size: 26,
                       color: _selectedIndex == 1
                           ? Colors.white
                           : const Color(0xFF9CA3AF),
                     ),
                   ),
-                  label: "Analitik",
+                  label: "Lokasi",
                 ),
                 BottomNavigationBarItem(
                   icon: Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      gradient: _selectedIndex == 2
-                          ? const LinearGradient(
-                              colors: [
-                                Color(0xFFEA580C), // Orange-600
-                                Color(0xFFF97316), // Orange-500
-                              ],
-                            )
-                          : null,
-                      color: _selectedIndex == 2 ? null : Colors.transparent,
-                      borderRadius: BorderRadius.circular(15),
+                      shape: BoxShape.circle,
+                      color: _selectedIndex == 2
+                          ? const Color(0xFFEA580C).withOpacity(0.2)
+                          : Colors.transparent,
                       boxShadow: _selectedIndex == 2
                           ? [
                               BoxShadow(
-                                color: const Color(0xFFF97316).withOpacity(0.4),
+                                color: const Color(0xFFF97316).withOpacity(0.3),
                                 blurRadius: 8,
-                                offset: const Offset(0, 4),
+                                offset: const Offset(0, 2),
                               ),
                             ]
-                          : null,
+                          : [],
                     ),
-                    child: Stack(
-                      children: [
-                        Icon(
-                          _selectedIndex == 2
-                              ? Icons.notifications
-                              : Icons.notifications_outlined,
-                          size: 26,
-                          color: _selectedIndex == 2
-                              ? Colors.white
-                              : const Color(0xFF9CA3AF),
-                        ),
-                        if (_selectedIndex != 2)
-                          Positioned(
-                            right: 0,
-                            top: 0,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFEF4444),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
-                      ],
+                    child: Icon(
+                      _selectedIndex == 2 ? Icons.home : Icons.home_outlined,
+                      size: 40,
+                      color: _selectedIndex == 2
+                          ? const Color(0xFFEA580C)
+                          : const Color(0xFF9CA3AF),
                     ),
                   ),
-                  label: "Notifikasi",
+                  label: "Home",
                 ),
                 BottomNavigationBarItem(
                   icon: Container(
@@ -388,10 +360,63 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard>
                             ]
                           : null,
                     ),
+                    child: Stack(
+                      children: [
+                        Icon(
+                          _selectedIndex == 3
+                              ? Icons.notifications
+                              : Icons.notifications_outlined,
+                          size: 26,
+                          color: _selectedIndex == 3
+                              ? Colors.white
+                              : const Color(0xFF9CA3AF),
+                        ),
+                        if (_selectedIndex != 3)
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFEF4444),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  label: "Notifikasi",
+                ),
+                BottomNavigationBarItem(
+                  icon: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      gradient: _selectedIndex == 4
+                          ? const LinearGradient(
+                              colors: [
+                                Color(0xFFEA580C), // Orange-600
+                                Color(0xFFF97316), // Orange-500
+                              ],
+                            )
+                          : null,
+                      color: _selectedIndex == 4 ? null : Colors.transparent,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: _selectedIndex == 4
+                          ? [
+                              BoxShadow(
+                                color: const Color(0xFFF97316).withOpacity(0.4),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ]
+                          : null,
+                    ),
                     child: Icon(
-                      _selectedIndex == 3 ? Icons.person : Icons.person_outline,
+                      _selectedIndex == 4 ? Icons.person : Icons.person_outline,
                       size: 26,
-                      color: _selectedIndex == 3
+                      color: _selectedIndex == 4
                           ? Colors.white
                           : const Color(0xFF9CA3AF),
                     ),
@@ -403,67 +428,21 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard>
           ),
         ),
       ),
-      floatingActionButton: _selectedIndex == 0
-          ? Container(
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFFF97316), // Orange-500
-                    Color(0xFFEA580C), // Orange-600
-                    Color(0xFFDC2626), // Red accent
-                  ],
-                  stops: [0.0, 0.7, 1.0],
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFF97316).withOpacity(0.5),
-                    blurRadius: 15,
-                    spreadRadius: 1,
-                    offset: const Offset(0, 6),
-                  ),
-                  BoxShadow(
-                    color: const Color(0xFFEA580C).withOpacity(0.3),
-                    blurRadius: 20,
-                    spreadRadius: -2,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: FloatingActionButton.extended(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const DistillationInputScreen(),
-                    ),
-                  );
-                },
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                icon: const Icon(Icons.add, color: Colors.white),
-                label: const Text(
-                  'Input Baru',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-            )
-          : null,
     );
   }
 
   String _getAppBarTitle() {
     switch (_selectedIndex) {
       case 0:
-        return 'Dashboard Penyulingan';
-      case 1:
         return 'Analitik & Laporan';
+      case 1:
+        return 'Lokasi Petani';
       case 2:
+        return 'Dashboard Penyulingan';
+      case 3:
         return 'Notifikasi';
+      case 4:
+        return 'Profil';
       default:
         return 'Dashboard Penyulingan';
     }
@@ -476,15 +455,10 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Welcome dengan Stats
             _buildWelcomeHeader(),
             const SizedBox(height: 24),
-
-            // Quick Stats Cards
             _buildQuickStats(),
             const SizedBox(height: 24),
-
-            // Menu Utama
             const Text(
               'Menu Utama',
               style: TextStyle(
@@ -495,8 +469,6 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard>
               ),
             ),
             const SizedBox(height: 16),
-
-            // Main Feature Cards
             _buildFeatureCard(
               context: context,
               icon: Icons.add_chart,
@@ -576,7 +548,7 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard>
                 );
               },
             ),
-            const SizedBox(height: 80), // FAB space
+            const SizedBox(height: 80),
           ],
         ),
       ),
@@ -1098,8 +1070,6 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard>
             ),
           ),
           const SizedBox(height: 28),
-
-          // Settings Button
           Container(
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
@@ -1164,8 +1134,6 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard>
               ),
             ),
           ),
-
-          // Logout Button
           Container(
             decoration: BoxDecoration(
               gradient: const LinearGradient(
@@ -1249,7 +1217,7 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard>
               ],
             ),
             child: Column(
-              mainAxisSize: MainAxisSize.min, // ✅ Fix di sini
+              mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(
                   Icons.logout_rounded,
@@ -1300,7 +1268,7 @@ class _UnitPenyulinganDashboardState extends State<UnitPenyulinganDashboard>
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () async {
-                          Navigator.of(ctx).pop(); // Tutup dialog
+                          Navigator.of(ctx).pop();
                           await AuthService().signOut();
                         },
                         style: ElevatedButton.styleFrom(

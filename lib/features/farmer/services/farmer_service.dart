@@ -7,7 +7,7 @@ import '../models/comment_model.dart';
 import '../models/post_model.dart';
 import '../models/request_model.dart';
 
-// Model untuk Harga Pasar (bisa Anda pindah ke file modelnya sendiri jika mau)
+// Model untuk Harga Pasar
 class MarketPriceModel {
   final String commodity;
   final int currentPrice;
@@ -33,12 +33,13 @@ class FarmerService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // --- FUNGSI UNTUK FORUM ---
+  // --- FUNGSI UNTUK FORUM (LENGKAP) ---
 
   Future<String?> createPost({
     required String title,
     required String content,
     required String category,
+    String? imageUrl,
   }) async {
     final user = _auth.currentUser;
     if (user == null) return "Pengguna harus login";
@@ -55,6 +56,9 @@ class FarmerService {
         'authorName': userName,
         'createdAt': Timestamp.now(),
         'commentCount': 0,
+        'imageUrl': imageUrl,
+        'likes': [],
+        'likeCount': 0,
       });
       return null;
     } catch (e) {
@@ -65,6 +69,7 @@ class FarmerService {
   Stream<List<PostModel>> getPostsStream() {
     return _firestore
         .collection('posts')
+        .orderBy('likeCount', descending: true)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map(
@@ -73,9 +78,18 @@ class FarmerService {
         );
   }
 
+  Stream<PostModel> getPostStream(String postId) {
+    return _firestore
+        .collection('posts')
+        .doc(postId)
+        .snapshots()
+        .map((doc) => PostModel.fromFirestore(doc));
+  }
+
   Future<String?> addComment({
     required String postId,
     required String content,
+    String? parentCommentId,
   }) async {
     final user = _auth.currentUser;
     if (user == null) return "Pengguna harus login";
@@ -93,6 +107,9 @@ class FarmerService {
             'authorId': user.uid,
             'authorName': userName,
             'createdAt': Timestamp.now(),
+            'likes': [],
+            'likeCount': 0,
+            'parentCommentId': parentCommentId,
           });
 
       await _firestore.collection('posts').doc(postId).update({
@@ -105,12 +122,14 @@ class FarmerService {
     }
   }
 
+  // --- PERUBAHAN DI FUNGSI INI ---
   Stream<List<CommentModel>> getCommentsStream(String postId) {
     return _firestore
         .collection('posts')
         .doc(postId)
         .collection('comments')
-        .orderBy('createdAt', descending: false)
+        .orderBy('likeCount', descending: true) // Urutkan berdasarkan suka
+        .orderBy('createdAt', descending: false) // Lalu waktu terlama
         .snapshots()
         .map(
           (snapshot) => snapshot.docs
@@ -118,8 +137,78 @@ class FarmerService {
               .toList(),
         );
   }
+  // --- AKHIR PERUBAHAN ---
 
-  // --- FUNGSI UNTUK HARGA PASAR ---
+  Future<String?> togglePostLike(String postId) async {
+    final user = _auth.currentUser;
+    if (user == null) return "Pengguna harus login";
+
+    try {
+      final postRef = _firestore.collection('posts').doc(postId);
+      await _firestore.runTransaction((transaction) async {
+        final snapshot = await transaction.get(postRef);
+        if (!snapshot.exists) throw Exception("Postingan tidak ditemukan!");
+
+        List<String> likes = List<String>.from(snapshot.data()?['likes'] ?? []);
+        if (likes.contains(user.uid)) {
+          likes.remove(user.uid);
+          transaction.update(postRef, {
+            'likes': likes,
+            'likeCount': FieldValue.increment(-1),
+          });
+        } else {
+          likes.add(user.uid);
+          transaction.update(postRef, {
+            'likes': likes,
+            'likeCount': FieldValue.increment(1),
+          });
+        }
+      });
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  Future<String?> toggleCommentLike({
+    required String postId,
+    required String commentId,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null) return "Pengguna harus login";
+
+    try {
+      final commentRef = _firestore
+          .collection('posts')
+          .doc(postId)
+          .collection('comments')
+          .doc(commentId);
+      await _firestore.runTransaction((transaction) async {
+        final snapshot = await transaction.get(commentRef);
+        if (!snapshot.exists) throw Exception("Komentar tidak ditemukan!");
+
+        List<String> likes = List<String>.from(snapshot.data()?['likes'] ?? []);
+        if (likes.contains(user.uid)) {
+          likes.remove(user.uid);
+          transaction.update(commentRef, {
+            'likes': likes,
+            'likeCount': FieldValue.increment(-1),
+          });
+        } else {
+          likes.add(user.uid);
+          transaction.update(commentRef, {
+            'likes': likes,
+            'likeCount': FieldValue.increment(1),
+          });
+        }
+      });
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  // --- FUNGSI LAINNYA (TIDAK BERUBAH) ---
   Stream<List<MarketPriceModel>> getMarketPricesStream() {
     return _firestore
         .collection('market_prices')
@@ -132,7 +221,6 @@ class FarmerService {
         });
   }
 
-  // --- FUNGSI LAINNYA YANG SUDAH ADA ---
   Future<void> applyForCertification({
     required String title,
     required String description,
@@ -305,13 +393,11 @@ class FarmerService {
           .doc(trainingId)
           .collection("registrants")
           .doc(userId);
-
       await docRef.set({
         "userId": userId,
         "userName": userName,
         "createdAt": FieldValue.serverTimestamp(),
       });
-
       return null;
     } catch (e) {
       return e.toString();

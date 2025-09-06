@@ -3,8 +3,8 @@ import 'package:pasaratsiri_app/features/auth/services/auth_service.dart';
 import 'package:pasaratsiri_app/features/farmer/screens/farmer_chat_list_screen.dart';
 import 'package:pasaratsiri_app/features/farmer/screens/training_list_screen.dart';
 import 'package:pasaratsiri_app/features/farmer/screens/farmer_order_list_screen.dart';
-import 'farmer_analytics_screen.dart';
 import 'forum_list_screen.dart';
+import 'package:pasaratsiri_app/features/farmer/screens/distiller_locations_screen.dart';
 
 class FarmerDashboard extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -14,10 +14,12 @@ class FarmerDashboard extends StatefulWidget {
   State<FarmerDashboard> createState() => _FarmerDashboardState();
 }
 
-class _FarmerDashboardState extends State<FarmerDashboard> {
-  int _selectedIndex = 0;
-  bool _showNotificationScreen = false;
+class _FarmerDashboardState extends State<FarmerDashboard>
+    with TickerProviderStateMixin {
+  int _selectedIndex = 2; // Default to Home
   late final List<Widget> _pages;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
 
   // Emerald/Teal Color Palette
   static const Color primaryEmerald = Color(0xFF10B981); // Emerald-500
@@ -30,30 +32,47 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    _animationController.forward();
+
     _pages = <Widget>[
-      _buildHomeScreen(context),
       const TrainingListScreen(),
       const FarmerChatListScreen(),
+      _buildHomeScreen(context),
+      const DistillerLocationsScreen(),
       _buildProfileScreen(context),
     ];
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-      _showNotificationScreen = false;
     });
+    _animationController.reset();
+    _animationController.forward();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      extendBody: true,
-      appBar: _buildAppBar(),
-      body: _showNotificationScreen
-          ? _buildNotificationScreen()
-          : _pages[_selectedIndex],
+      backgroundColor: ultraLightEmerald,
+      appBar: _selectedIndex != 4 ? _buildAppBar() : null,
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: _pages[_selectedIndex],
+      ),
       bottomNavigationBar: _buildBottomNavBar(),
     );
   }
@@ -62,7 +81,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
     return AppBar(
       elevation: 0,
       toolbarHeight: 70,
-      centerTitle: false,
+      centerTitle: true,
       backgroundColor: Colors.transparent,
       flexibleSpace: Container(
         decoration: BoxDecoration(
@@ -104,7 +123,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.wb_sunny, color: Colors.white, size: 18),
+              const Icon(Icons.wb_sunny, color: Colors.white, size: 18),
               const SizedBox(width: 6),
               Text(
                 '28°C',
@@ -117,35 +136,292 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
             ],
           ),
         ),
-        IconButton(
-          onPressed: () {
-            setState(() {
-              _showNotificationScreen = true;
-            });
-          },
-          icon: Icon(Icons.notifications, color: Colors.white, size: 24),
-          padding: const EdgeInsets.only(right: 16, top: 8),
+        GestureDetector(
+          onTap: () => _showNotificationDialog(),
+          child: Container(
+            margin: const EdgeInsets.only(right: 16, top: 8),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withOpacity(0.3)),
+            ),
+            child: Stack(
+              children: [
+                const Icon(
+                  Icons.notifications_outlined,
+                  color: Colors.white,
+                  size: 24,
+                ),
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFEF4444),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );
   }
 
   String _getAppBarTitle() {
-    if (_showNotificationScreen) {
-      return "Notifikasi";
-    }
     switch (_selectedIndex) {
       case 0:
-        return "Dashboard Petani";
-      case 1:
         return "Pusat Pelatihan";
-      case 2:
+      case 1:
         return "Pesan Masuk";
+      case 2:
+        return "Dashboard Petani";
       case 3:
+        return "Lokasi Penyuling";
+      case 4:
         return "Profil Saya";
       default:
         return "Dashboard Petani";
     }
+  }
+
+  void _showNotificationDialog() {
+    // Data dummy untuk notifikasi
+    final List<Map<String, dynamic>> dummyNotifications = [
+      {
+        'title': 'Pesanan Baru Diterima',
+        'description': 'Pesanan #1234 untuk 50kg vetiver telah diterima.',
+        'time': '2 jam yang lalu',
+        'isRead': false,
+      },
+      {
+        'title': 'Pengingat Panen',
+        'description': 'Waktunya panen di lahan A besok pagi.',
+        'time': '5 jam yang lalu',
+        'isRead': true,
+      },
+      {
+        'title': 'Harga Pasar Terbaru',
+        'description': 'Harga vetiver naik 5% di pasar lokal.',
+        'time': 'Kemarin, 15:30',
+        'isRead': false,
+      },
+      {
+        'title': 'Pelatihan Baru',
+        'description':
+            'Pelatihan penyulingan minyak atsiri dijadwalkan minggu depan.',
+        'time': '2 hari yang lalu',
+        'isRead': true,
+      },
+    ];
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+        elevation: 10,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(25),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.white, ultraLightEmerald],
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [primaryEmerald, mediumEmerald],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: primaryEmerald.withOpacity(0.4),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.notifications, color: Colors.white, size: 28),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Notifikasi',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                constraints: BoxConstraints(
+                  maxHeight:
+                      MediaQuery.of(context).size.height * 0.5, // Batasi tinggi
+                ),
+                child: dummyNotifications.isEmpty
+                    ? Text(
+                        'Belum ada notifikasi',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade600,
+                        ),
+                      )
+                    : ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: dummyNotifications.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final notification = dummyNotifications[index];
+                          return Material(
+                            borderRadius: BorderRadius.circular(15),
+                            elevation: 0,
+                            child: InkWell(
+                              onTap: () {
+                                // Simulasi tandai sebagai dibaca
+                                setState(() {
+                                  dummyNotifications[index]['isRead'] = true;
+                                });
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Notifikasi ditandai sebagai dibaca',
+                                    ),
+                                    backgroundColor: mediumEmerald,
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                  ),
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(15),
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: notification['isRead']
+                                      ? Colors.white
+                                      : lightEmerald.withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(15),
+                                  border: Border.all(
+                                    color: notification['isRead']
+                                        ? Colors.grey.shade200
+                                        : primaryEmerald.withOpacity(0.5),
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.shade200,
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: notification['isRead']
+                                            ? Colors.grey.shade300
+                                            : primaryEmerald,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Icons.notifications_active,
+                                        color: Colors.white,
+                                        size: 24,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            notification['title'],
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.grey.shade800,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            notification['description'],
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.grey.shade600,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            notification['time'],
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey.shade500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (!notification['isRead'])
+                                      Container(
+                                        width: 12,
+                                        height: 12,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFFEF4444),
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryEmerald,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                  child: const Text('Tutup'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildHomeScreen(BuildContext context) {
@@ -342,13 +618,12 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
           ),
         ),
         const SizedBox(height: 16),
-        // Fix overflow dengan SingleChildScrollView
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
           child: Row(
             children: [
-              const SizedBox(width: 8), // Padding awal
+              const SizedBox(width: 8),
               _quickActionCard(
                 'Catat Panen',
                 Icons.agriculture,
@@ -379,7 +654,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                 Colors.red.shade600,
                 () => _showReminderDialog(context),
               ),
-              const SizedBox(width: 8), // Padding akhir
+              const SizedBox(width: 8),
             ],
           ),
         ),
@@ -505,19 +780,6 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
               },
             ),
             _buildEnhancedCard(
-              icon: Icons.analytics_outlined,
-              title: 'Dashboard Analitik',
-              color: Colors.indigo.shade600,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const FarmerAnalyticsScreen(),
-                  ),
-                );
-              },
-            ),
-            _buildEnhancedCard(
               icon: Icons.forum_outlined,
               title: 'Forum Diskusi',
               color: Colors.lightBlue.shade600,
@@ -604,121 +866,6 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildNotificationScreen() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Notifikasi Terbaru',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade800,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: ListView(
-              children: [
-                _notificationItem(
-                  'Harga Minyak Atsiri Naik',
-                  'Harga minyak vetiver naik 5% hari ini',
-                  Icons.trending_up,
-                  mediumEmerald,
-                  '2 jam lalu',
-                ),
-                _notificationItem(
-                  'Bantuan Subsidi Tersedia',
-                  'Program subsidi pupuk telah dibuka',
-                  Icons.savings,
-                  Colors.blue.shade600,
-                  '5 jam lalu',
-                ),
-                _notificationItem(
-                  'Pelatihan Online Baru',
-                  'Teknik penyulingan modern tersedia',
-                  Icons.school,
-                  Colors.orange.shade600,
-                  '1 hari lalu',
-                ),
-                _notificationItem(
-                  'Cuaca Buruk Peringatan',
-                  'Hujan lebat diprediksi 3 hari ke depan',
-                  Icons.cloud_queue,
-                  Colors.red.shade600,
-                  '2 hari lalu',
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _notificationItem(
-    String title,
-    String description,
-    IconData icon,
-    Color color,
-    String time,
-  ) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade200,
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  time,
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -813,22 +960,9 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
             ),
             child: Row(
               children: [
-                Icon(icon, color: mediumEmerald),
-                const SizedBox(width: 16),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade700,
-                  ),
-                ),
-                const Spacer(),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colors.grey.shade400,
-                  size: 16,
-                ),
+                Icon(icon, color: Colors.green),
+                const SizedBox(width: 12),
+                Text(title, style: const TextStyle(fontSize: 16)),
               ],
             ),
           ),
@@ -839,112 +973,198 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
 
   Widget _buildBottomNavBar() {
     return Container(
-      margin: const EdgeInsets.fromLTRB(20, 0, 20, 25),
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Colors.white, Colors.grey.shade50, Colors.white],
-        ),
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
-            color: primaryEmerald.withOpacity(0.3),
+            color: Colors.black.withOpacity(0.15),
             blurRadius: 25,
             offset: const Offset(0, 15),
           ),
-          BoxShadow(
-            color: Colors.grey.shade200.withOpacity(0.8),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-          BoxShadow(
-            color: Colors.white.withOpacity(0.9),
-            blurRadius: 15,
-            offset: const Offset(-8, -8),
-          ),
-          BoxShadow(
-            color: Colors.grey.shade300.withOpacity(0.4),
-            blurRadius: 15,
-            offset: const Offset(8, 8),
-          ),
-        ],
-        border: Border.all(color: Colors.white.withOpacity(0.8), width: 1),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavItem(0, Icons.home_filled, Icons.home_outlined, 'Home'),
-          _buildNavItem(1, Icons.school, Icons.school_outlined, 'Pelatihan'),
-          _buildNavItem(
-            2,
-            Icons.chat_bubble,
-            Icons.chat_bubble_outline,
-            'Pesan',
-          ),
-          _buildNavItem(3, Icons.person, Icons.person_outline, 'Profil'),
         ],
       ),
-    );
-  }
-
-  Widget _buildNavItem(
-    int index,
-    IconData activeIcon,
-    IconData inactiveIcon,
-    String label,
-  ) {
-    final isSelected = _selectedIndex == index;
-    return GestureDetector(
-      onTap: () => _onItemTapped(index),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(
-                  colors: [
-                    primaryEmerald.withOpacity(0.2),
-                    mediumEmerald.withOpacity(0.1),
-                  ],
-                )
-              : null,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: primaryEmerald.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(25),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.white, Colors.grey.shade100, Colors.white],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: BottomNavigationBar(
+            currentIndex: _selectedIndex,
+            onTap: _onItemTapped,
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: darkEmerald,
+            unselectedItemColor: Colors.grey.shade600,
+            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            items: [
+              BottomNavigationBarItem(
+                icon: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    gradient: _selectedIndex == 0
+                        ? LinearGradient(
+                            colors: [primaryEmerald, mediumEmerald],
+                          )
+                        : null,
+                    color: _selectedIndex == 0 ? null : Colors.transparent,
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: _selectedIndex == 0
+                        ? [
+                            BoxShadow(
+                              color: primaryEmerald.withOpacity(0.4),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : null,
                   ),
-                ]
-              : null,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isSelected ? activeIcon : inactiveIcon,
-              color: isSelected ? darkEmerald : Colors.grey.shade600,
-              size: 26,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? darkEmerald : Colors.grey.shade600,
-                fontSize: isSelected ? 13 : 12,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                letterSpacing: 0.2,
+                  child: Icon(
+                    _selectedIndex == 0 ? Icons.school : Icons.school_outlined,
+                    size: 26,
+                    color: _selectedIndex == 0
+                        ? Colors.white
+                        : Colors.grey.shade600,
+                  ),
+                ),
+                label: 'Pelatihan',
               ),
-            ),
-          ],
+              BottomNavigationBarItem(
+                icon: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    gradient: _selectedIndex == 1
+                        ? LinearGradient(
+                            colors: [primaryEmerald, mediumEmerald],
+                          )
+                        : null,
+                    color: _selectedIndex == 1 ? null : Colors.transparent,
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: _selectedIndex == 1
+                        ? [
+                            BoxShadow(
+                              color: primaryEmerald.withOpacity(0.4),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Icon(
+                    _selectedIndex == 1
+                        ? Icons.chat_bubble
+                        : Icons.chat_bubble_outline,
+                    size: 26,
+                    color: _selectedIndex == 1
+                        ? Colors.white
+                        : Colors.grey.shade600,
+                  ),
+                ),
+                label: 'Pesan',
+              ),
+              BottomNavigationBarItem(
+                icon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _selectedIndex == 2
+                        ? primaryEmerald.withOpacity(0.2)
+                        : Colors.transparent,
+                    boxShadow: _selectedIndex == 2
+                        ? [
+                            BoxShadow(
+                              color: primaryEmerald.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ]
+                        : [],
+                  ),
+                  child: Icon(
+                    _selectedIndex == 2 ? Icons.home : Icons.home_outlined,
+                    size: 40,
+                    color: _selectedIndex == 2
+                        ? darkEmerald
+                        : Colors.grey.shade600,
+                  ),
+                ),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    gradient: _selectedIndex == 3
+                        ? LinearGradient(
+                            colors: [primaryEmerald, mediumEmerald],
+                          )
+                        : null,
+                    color: _selectedIndex == 3 ? null : Colors.transparent,
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: _selectedIndex == 3
+                        ? [
+                            BoxShadow(
+                              color: primaryEmerald.withOpacity(0.4),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Icon(
+                    _selectedIndex == 3 ? Icons.map : Icons.map_outlined,
+                    size: 26,
+                    color: _selectedIndex == 3
+                        ? Colors.white
+                        : Colors.grey.shade600,
+                  ),
+                ),
+                label: 'Lokasi',
+              ),
+              BottomNavigationBarItem(
+                icon: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    gradient: _selectedIndex == 4
+                        ? LinearGradient(
+                            colors: [primaryEmerald, mediumEmerald],
+                          )
+                        : null,
+                    color: _selectedIndex == 4 ? null : Colors.transparent,
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: _selectedIndex == 4
+                        ? [
+                            BoxShadow(
+                              color: primaryEmerald.withOpacity(0.4),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Icon(
+                    _selectedIndex == 4 ? Icons.person : Icons.person_outline,
+                    size: 26,
+                    color: _selectedIndex == 4
+                        ? Colors.white
+                        : Colors.grey.shade600,
+                  ),
+                ),
+                label: 'Profil',
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // IMPROVED DIALOGS
   void _showHarvestDialog() {
     final harvestController = TextEditingController();
     final dateController = TextEditingController();
@@ -1394,7 +1614,6 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Header
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -1430,8 +1649,6 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                     ),
                   ),
                   const SizedBox(height: 24),
-
-                  // Reminder type dropdown
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.grey.shade50,
@@ -1471,8 +1688,6 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // Description input
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.grey.shade50,
@@ -1498,8 +1713,6 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // Date time input
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.grey.shade50,
@@ -1580,8 +1793,6 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // Notification toggle
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -1618,8 +1829,6 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                     ),
                   ),
                   const SizedBox(height: 24),
-
-                  // Action buttons
                   Row(
                     children: [
                       Expanded(
@@ -1707,7 +1916,6 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Header
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -1740,10 +1948,8 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                   ),
                 ),
                 const SizedBox(height: 24),
-
                 Icon(Icons.help_outline, color: Colors.grey.shade600, size: 48),
                 const SizedBox(height: 16),
-
                 Text(
                   'Apakah Anda yakin ingin keluar dari akun ini?',
                   textAlign: TextAlign.center,
@@ -1754,8 +1960,6 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                   ),
                 ),
                 const SizedBox(height: 24),
-
-                // Action buttons
                 Row(
                   children: [
                     Expanded(

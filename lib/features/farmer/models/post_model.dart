@@ -1,5 +1,3 @@
-// lib/features/farmer/models/post_model.dart
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PostModel {
@@ -11,6 +9,9 @@ class PostModel {
   final DateTime createdAt;
   final int commentCount;
   final String category;
+  final String? imageUrl;
+  final List<String> likes;
+  final int likeCount;
 
   PostModel({
     required this.id,
@@ -21,6 +22,9 @@ class PostModel {
     required this.createdAt,
     required this.commentCount,
     required this.category,
+    this.imageUrl,
+    required this.likes,
+    required this.likeCount,
   });
 
   factory PostModel.fromFirestore(DocumentSnapshot doc) {
@@ -34,6 +38,9 @@ class PostModel {
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       commentCount: data['commentCount'] ?? 0,
       category: data['category'] ?? 'Lainnya',
+      imageUrl: data['imageUrl'],
+      likes: List<String>.from(data['likes'] ?? []),
+      likeCount: data['likeCount'] ?? 0,
     );
   }
 }

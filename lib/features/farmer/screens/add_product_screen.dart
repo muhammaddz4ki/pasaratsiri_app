@@ -21,6 +21,16 @@ class _AddProductScreenState extends State<AddProductScreen>
   final _weightController = TextEditingController();
   final _imageUrlController = TextEditingController();
 
+  // --- KATEGORI BARU ---
+  final List<String> _categories = [
+    'Minyak Atsiri',
+    'Herbal',
+    'Aromaterapi',
+    'Skincare',
+  ];
+  String? _selectedCategory;
+  // --- END KATEGORI BARU ---
+
   bool _isLoading = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -54,6 +64,7 @@ class _AddProductScreenState extends State<AddProductScreen>
         description: _descriptionController.text,
         weight: _weightController.text,
         imageUrl: _imageUrlController.text,
+        category: _selectedCategory!, // <-- KIRIM KATEGORI
       );
 
       if (mounted) setState(() => _isLoading = false);
@@ -129,6 +140,122 @@ class _AddProductScreenState extends State<AddProductScreen>
     }
   }
 
+  // --- WIDGET DROPDOWN KATEGORI BARU ---
+  Widget _buildCategoryDropdown() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 8),
+            child: Text(
+              'Kategori Produk',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[700],
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 4),
+                ),
+                const BoxShadow(
+                  color: Colors.white,
+                  blurRadius: 10,
+                  offset: Offset(-2, -2),
+                ),
+              ],
+            ),
+            child: DropdownButtonFormField<String>(
+              value: _selectedCategory,
+              validator: (value) =>
+                  value == null ? 'Kategori harus dipilih' : null,
+              hint: Text(
+                'Pilih Kategori Produk',
+                style: TextStyle(color: Colors.grey[400], fontSize: 14),
+              ),
+              onChanged: (newValue) {
+                setState(() {
+                  _selectedCategory = newValue;
+                });
+              },
+              items: _categories.map((String category) {
+                return DropdownMenuItem<String>(
+                  value: category,
+                  child: Text(category),
+                );
+              }).toList(),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[800],
+              ),
+              decoration: InputDecoration(
+                prefixIcon: Container(
+                  margin: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF10B981), Color(0xFF14B8A6)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF10B981).withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.category,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(
+                    color: Colors.grey.withOpacity(0.2),
+                    width: 1,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF10B981),
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCustomTextField({
     required TextEditingController controller,
     required String label,
@@ -165,10 +292,10 @@ class _AddProductScreenState extends State<AddProductScreen>
                   blurRadius: 20,
                   offset: const Offset(0, 4),
                 ),
-                BoxShadow(
+                const BoxShadow(
                   color: Colors.white,
                   blurRadius: 10,
-                  offset: const Offset(-2, -2),
+                  offset: Offset(-2, -2),
                 ),
               ],
             ),
@@ -252,7 +379,6 @@ class _AddProductScreenState extends State<AddProductScreen>
       backgroundColor: const Color(0xFFF8FAFC),
       body: CustomScrollView(
         slivers: [
-          // Custom App Bar with Gradient
           SliverAppBar(
             expandedHeight: 120,
             floating: false,
@@ -315,8 +441,6 @@ class _AddProductScreenState extends State<AddProductScreen>
               centerTitle: true,
             ),
           ),
-
-          // Form Content
           SliverToBoxAdapter(
             child: FadeTransition(
               opacity: _fadeAnimation,
@@ -324,7 +448,6 @@ class _AddProductScreenState extends State<AddProductScreen>
                 margin: const EdgeInsets.only(top: 20),
                 child: Column(
                   children: [
-                    // Header Card
                     Container(
                       margin: const EdgeInsets.symmetric(
                         horizontal: 24,
@@ -344,10 +467,10 @@ class _AddProductScreenState extends State<AddProductScreen>
                             blurRadius: 24,
                             offset: const Offset(0, 8),
                           ),
-                          BoxShadow(
+                          const BoxShadow(
                             color: Colors.white,
                             blurRadius: 10,
-                            offset: const Offset(-4, -4),
+                            offset: Offset(-4, -4),
                           ),
                         ],
                         border: Border.all(
@@ -410,8 +533,6 @@ class _AddProductScreenState extends State<AddProductScreen>
                         ],
                       ),
                     ),
-
-                    // Form Card
                     Container(
                       margin: const EdgeInsets.all(24),
                       padding: const EdgeInsets.all(28),
@@ -453,7 +574,6 @@ class _AddProductScreenState extends State<AddProductScreen>
                                 return null;
                               },
                             ),
-
                             _buildCustomTextField(
                               controller: _nameController,
                               label: 'Nama Produk',
@@ -462,7 +582,8 @@ class _AddProductScreenState extends State<AddProductScreen>
                               validator: (v) =>
                                   v!.isEmpty ? 'Nama tidak boleh kosong' : null,
                             ),
-
+                            // --- TAMBAHKAN DROPDOWN DI SINI ---
+                            _buildCategoryDropdown(),
                             _buildCustomTextField(
                               controller: _priceController,
                               label: 'Harga Produk',
@@ -474,7 +595,6 @@ class _AddProductScreenState extends State<AddProductScreen>
                                   ? 'Harga tidak boleh kosong'
                                   : null,
                             ),
-
                             _buildCustomTextField(
                               controller: _weightController,
                               label: 'Berat/Volume',
@@ -484,7 +604,6 @@ class _AddProductScreenState extends State<AddProductScreen>
                                   ? 'Berat tidak boleh kosong'
                                   : null,
                             ),
-
                             _buildCustomTextField(
                               controller: _descriptionController,
                               label: 'Deskripsi Produk',
@@ -495,10 +614,7 @@ class _AddProductScreenState extends State<AddProductScreen>
                                   ? 'Deskripsi tidak boleh kosong'
                                   : null,
                             ),
-
                             const SizedBox(height: 16),
-
-                            // Submit Button
                             Container(
                               width: double.infinity,
                               height: 56,

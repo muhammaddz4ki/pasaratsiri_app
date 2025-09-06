@@ -1,5 +1,6 @@
 // lib/features/farmer/screens/forum_detail_screen.dart
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pasaratsiri_app/features/farmer/models/comment_model.dart';
@@ -7,8 +8,8 @@ import 'package:pasaratsiri_app/features/farmer/models/post_model.dart';
 import 'package:pasaratsiri_app/features/farmer/services/farmer_service.dart';
 
 class ForumDetailScreen extends StatefulWidget {
-  final PostModel post;
-  const ForumDetailScreen({super.key, required this.post});
+  final String postId;
+  const ForumDetailScreen({super.key, required this.postId});
 
   @override
   State<ForumDetailScreen> createState() => _ForumDetailScreenState();
@@ -18,475 +19,419 @@ class _ForumDetailScreenState extends State<ForumDetailScreen> {
   final FarmerService _farmerService = FarmerService();
   final _commentController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final FocusNode _commentFocusNode = FocusNode();
   bool _isCommenting = false;
-
-  // Define the emerald color palette
-  final Color emeraldPrimary = const Color(0xFF10B981); // Emerald-500
-  final Color emeraldSecondary = const Color(0xFF14B8A6); // Teal-500
-  final Color emeraldDark = const Color(0xFF047857); // Emerald-700
-  final Color emeraldLight = const Color(0xFFD1FAE5); // Emerald-100
-  final Color emeraldUltraLight = const Color(0xFFECFDF5); // Emerald-50
+  CommentModel? _replyingToComment;
 
   Future<void> _submitComment() async {
-    if (_commentController.text.trim().isEmpty) {
-      return;
-    }
-
-    setState(() {
-      _isCommenting = true;
-    });
+    if (_commentController.text.trim().isEmpty) return;
+    setState(() => _isCommenting = true);
 
     final result = await _farmerService.addComment(
-      postId: widget.post.id,
-      content: _commentController.text,
+      postId: widget.postId,
+      content: _commentController.text.trim(),
+      parentCommentId: _replyingToComment?.id,
     );
 
-    if (result == null) {
-      _commentController.clear();
-      // Scroll to bottom after commenting
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal mengirim komentar: $result'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+    if (mounted) {
+      if (result == null) {
+        _commentController.clear();
+        FocusScope.of(context).unfocus();
+        setState(() {
+          _replyingToComment = null;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal mengirim komentar: $result'),
+            backgroundColor: Colors.red,
           ),
-        ),
-      );
+        );
+      }
+      setState(() => _isCommenting = false);
     }
-
-    setState(() {
-      _isCommenting = false;
-    });
   }
 
   @override
   void dispose() {
     _commentController.dispose();
     _scrollController.dispose();
+    _commentFocusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Detail Diskusi'),
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [emeraldPrimary, emeraldDark],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              stops: const [0.0, 0.8],
-            ),
-            borderRadius: const BorderRadius.vertical(
-              bottom: Radius.circular(15),
-            ),
-          ),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: () {
-              // Add share functionality
-            },
-          ),
-        ],
-      ),
-      backgroundColor: emeraldUltraLight,
-      body: Column(
-        children: [
-          Expanded(
-            child: CustomScrollView(
-              controller: _scrollController,
-              slivers: [
-                // Bagian untuk menampilkan isi postingan
-                SliverToBoxAdapter(child: _buildPostDetails()),
-                // Judul "Komentar"
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
-                    child: Row(
-                      children: [
-                        Text(
-                          'Komentar',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: emeraldDark,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: emeraldLight,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: StreamBuilder<List<CommentModel>>(
-                            stream: _farmerService.getCommentsStream(
-                              widget.post.id,
-                            ),
-                            builder: (context, snapshot) {
-                              final count = snapshot.hasData
-                                  ? snapshot.data!.length
-                                  : 0;
-                              return Text(
-                                count.toString(),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: emeraldDark,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                // Bagian untuk menampilkan daftar komentar
-                _buildCommentsList(),
-                const SliverToBoxAdapter(child: SizedBox(height: 16)),
-              ],
-            ),
-          ),
-          // Bagian untuk input komentar
-          _buildCommentInput(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPostDetails() {
-    return Container(
-      padding: const EdgeInsets.all(20.0),
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.white, emeraldLight],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: emeraldPrimary.withOpacity(0.1),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-            spreadRadius: 2,
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.post.title,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: emeraldDark,
-              height: 1.3,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: emeraldUltraLight,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.person_outline, size: 16, color: emeraldDark),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                widget.post.authorName,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: emeraldDark.withOpacity(0.8),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: emeraldUltraLight,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.calendar_today_outlined,
-                  size: 14,
-                  color: emeraldDark,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                DateFormat('d MMM yyyy', 'id_ID').format(widget.post.createdAt),
-                style: TextStyle(
-                  fontSize: 14,
-                  color: emeraldDark.withOpacity(0.8),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Divider(color: emeraldLight, height: 1, thickness: 1),
-          const SizedBox(height: 16),
-          Text(
-            widget.post.content,
-            style: TextStyle(
-              fontSize: 16,
-              height: 1.6,
-              color: Colors.grey.shade800,
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Post metrics (likes, comments, etc.)
-          Row(
-            children: [
-              Icon(
-                Icons.thumb_up_outlined,
-                size: 18,
-                color: emeraldDark.withOpacity(0.6),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                '12 Suka',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: emeraldDark.withOpacity(0.6),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Icon(
-                Icons.comment_outlined,
-                size: 18,
-                color: emeraldDark.withOpacity(0.6),
-              ),
-              const SizedBox(width: 4),
-              StreamBuilder<List<CommentModel>>(
-                stream: _farmerService.getCommentsStream(widget.post.id),
-                builder: (context, snapshot) {
-                  final count = snapshot.hasData ? snapshot.data!.length : 0;
-                  return Text(
-                    '$count Komentar',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: emeraldDark.withOpacity(0.6),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCommentsList() {
-    return StreamBuilder<List<CommentModel>>(
-      stream: _farmerService.getCommentsStream(widget.post.id),
+    return StreamBuilder<PostModel>(
+      stream: _farmerService.getPostStream(widget.postId),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 40),
-              child: Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(emeraldPrimary),
-                ),
-              ),
-            ),
+        if (snapshot.connectionState == ConnectionState.waiting ||
+            !snapshot.hasData) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Detail Postingan')),
+            body: const Center(child: CircularProgressIndicator()),
           );
         }
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.chat_bubble_outline,
-                      size: 48,
-                      color: emeraldLight,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Belum ada komentar',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: emeraldDark.withOpacity(0.6),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Jadilah yang pertama berkomentar',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
+        if (snapshot.hasError) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Error')),
+            body: Center(
+              child: Text('Gagal memuat postingan: ${snapshot.error}'),
             ),
           );
         }
 
-        final comments = snapshot.data!;
-        return SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) => _buildCommentItem(comments[index]),
-            childCount: comments.length,
+        final post = snapshot.data!;
+
+        return Scaffold(
+          backgroundColor: Colors.grey.shade100,
+          body: Column(
+            children: [
+              Expanded(
+                child: CustomScrollView(
+                  controller: _scrollController,
+                  slivers: [
+                    _buildSliverAppBar(post),
+                    SliverToBoxAdapter(child: _buildPostDetails(post)),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+                        child: Text(
+                          'Komentar (${post.commentCount})',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey.shade800,
+                          ),
+                        ),
+                      ),
+                    ),
+                    _buildCommentsList(post.id),
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: 20),
+                    ), // Spasi di bawah
+                  ],
+                ),
+              ),
+              _buildCommentInput(),
+            ],
           ),
         );
       },
     );
   }
 
-  Widget _buildCommentItem(CommentModel comment) {
+  SliverAppBar _buildSliverAppBar(PostModel post) {
+    return SliverAppBar(
+      expandedHeight: 250.0,
+      pinned: true,
+      stretch: true,
+      foregroundColor: Colors.white,
+      backgroundColor: Colors.green.shade700,
+      flexibleSpace: FlexibleSpaceBar(
+        titlePadding: const EdgeInsets.symmetric(horizontal: 48, vertical: 12),
+        centerTitle: false,
+        title: Text(
+          post.title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            shadows: [Shadow(blurRadius: 8.0, color: Colors.black54)],
+          ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        background: (post.imageUrl != null && post.imageUrl!.isNotEmpty)
+            ? Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.network(
+                    post.imageUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      color: Colors.grey,
+                      child: const Icon(
+                        Icons.broken_image_rounded,
+                        size: 60,
+                        color: Colors.white54,
+                      ),
+                    ),
+                  ),
+                  const DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: <Color>[Colors.transparent, Colors.black87],
+                        stops: [0.5, 1.0],
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            : Container(color: Colors.green.shade600),
+      ),
+    );
+  }
+
+  Widget _buildPostDetails(PostModel post) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final bool isLikedByMe =
+        currentUser != null && post.likes.contains(currentUser.uid);
+
     return Container(
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+      color: Colors.white,
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            post.content,
+            style: const TextStyle(
+              fontSize: 16,
+              height: 1.6,
+              color: Color(0xFF334155),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              const Icon(Icons.person_outline, size: 16, color: Colors.grey),
+              const SizedBox(width: 6),
+              Text(
+                post.authorName,
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+              ),
+              const Spacer(),
+              const Icon(
+                Icons.calendar_today_outlined,
+                size: 14,
+                color: Colors.grey,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                DateFormat('d MMM yyyy', 'id_ID').format(post.createdAt),
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+              ),
+            ],
+          ),
+          const Divider(height: 24),
+          Row(
+            children: [
+              InkWell(
+                onTap: () => _farmerService.togglePostLike(post.id),
+                child: Row(
+                  children: [
+                    Icon(
+                      isLikedByMe ? Icons.thumb_up : Icons.thumb_up_outlined,
+                      size: 18,
+                      color: isLikedByMe
+                          ? Colors.blue.shade700
+                          : Colors.grey.shade600,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${post.likeCount} Suka',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 24),
+              Row(
+                children: [
+                  Icon(
+                    Icons.comment_outlined,
+                    size: 18,
+                    color: Colors.grey.shade600,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '${post.commentCount} Komentar',
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCommentsList(String postId) {
+    return StreamBuilder<List<CommentModel>>(
+      stream: _farmerService.getCommentsStream(postId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SliverToBoxAdapter(
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const SliverToBoxAdapter(
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 40),
+                child: Text('Belum ada komentar.'),
+              ),
+            ),
+          );
+        }
+
+        final allComments = snapshot.data!;
+        final topLevelComments = allComments
+            .where((c) => c.parentCommentId == null)
+            .toList();
+        final repliesMap = <String, List<CommentModel>>{};
+
+        for (var comment in allComments) {
+          if (comment.parentCommentId != null) {
+            repliesMap
+                .putIfAbsent(comment.parentCommentId!, () => [])
+                .add(comment);
+          }
+        }
+
+        return SliverList(
+          delegate: SliverChildBuilderDelegate((context, index) {
+            final comment = topLevelComments[index];
+            final replies = repliesMap[comment.id] ?? [];
+            return Column(
+              children: [
+                _buildCommentItem(comment),
+                if (replies.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 40.0, right: 8.0),
+                    child: Column(
+                      children: replies
+                          .map((reply) => _buildCommentItem(reply))
+                          .toList(),
+                    ),
+                  ),
+              ],
+            );
+          }, childCount: topLevelComments.length),
+        );
+      },
+    );
+  }
+
+  Widget _buildCommentItem(CommentModel comment) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final bool isLiked =
+        currentUser != null && comment.likes.contains(currentUser.uid);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+      decoration: BoxDecoration(
+        color: comment.parentCommentId == null
+            ? Colors.white
+            : Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [emeraldPrimary, emeraldSecondary],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.person, size: 20, color: Colors.white),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  comment.authorName,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: emeraldDark,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
+              Text(
+                comment.authorName,
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const Spacer(),
               Text(
                 DateFormat('d MMM, HH:mm', 'id_ID').format(comment.createdAt),
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.only(left: 48),
-            child: Text(
-              comment.content,
-              style: TextStyle(
-                fontSize: 14,
-                height: 1.4,
-                color: Colors.grey.shade800,
-              ),
-            ),
+          const SizedBox(height: 8),
+          Text(
+            comment.content,
+            style: const TextStyle(color: Color(0xFF334155)),
           ),
           const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.only(left: 48),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.thumb_up_outlined,
-                    size: 18,
-                    color: Colors.grey.shade600,
+          Row(
+            children: [
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => _farmerService.toggleCommentLike(
+                    postId: widget.postId,
+                    commentId: comment.id,
                   ),
-                  onPressed: () {},
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  'Suka',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                ),
-                const SizedBox(width: 16),
-                IconButton(
-                  icon: Icon(
-                    Icons.reply,
-                    size: 18,
-                    color: Colors.grey.shade600,
+                  borderRadius: BorderRadius.circular(4),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 2,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
+                          size: 18,
+                          color: isLiked
+                              ? Colors.blue.shade700
+                              : Colors.grey.shade600,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          comment.likeCount.toString(),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  onPressed: () {},
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
                 ),
-                const SizedBox(width: 4),
-                Text(
-                  'Balas',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              ),
+              const SizedBox(width: 24),
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    setState(() {
+                      _replyingToComment = comment;
+                    });
+                    _commentFocusNode.requestFocus();
+                  },
+                  borderRadius: BorderRadius.circular(4),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 2,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.reply,
+                          size: 18,
+                          color: Colors.grey.shade600,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Balas',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
@@ -495,90 +440,84 @@ class _ForumDetailScreenState extends State<ForumDetailScreen> {
 
   Widget _buildCommentInput() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
+          // --- PERBAIKAN: 'const' dihapus dari sini ---
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+            color: Colors.grey.withOpacity(0.3),
+            spreadRadius: 1,
+            blurRadius: 5,
           ),
         ],
       ),
       child: SafeArea(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 36,
-              height: 36,
-              margin: const EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [emeraldPrimary, emeraldSecondary],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+            if (_replyingToComment != null)
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 8.0,
+                  right: 8.0,
+                  bottom: 8.0,
                 ),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.person, size: 20, color: Colors.white),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: emeraldUltraLight,
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: TextField(
-                  controller: _commentController,
-                  decoration: InputDecoration(
-                    hintText: 'Tulis komentar...',
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 14,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Membalas kepada @${_replyingToComment!.authorName}',
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
-                    hintStyle: TextStyle(color: Colors.grey.shade600),
-                  ),
-                  textCapitalization: TextCapitalization.sentences,
-                  maxLines: null,
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 16),
+                      onPressed: () {
+                        setState(() {
+                          _replyingToComment = null;
+                        });
+                      },
+                    ),
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [emeraldPrimary, emeraldSecondary],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: emeraldPrimary.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _commentController,
+                    focusNode: _commentFocusNode,
+                    decoration: InputDecoration(
+                      hintText: 'Tulis komentar...',
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                      ),
+                    ),
+                    textCapitalization: TextCapitalization.sentences,
                   ),
-                ],
-              ),
-              child: IconButton(
-                onPressed: _isCommenting ? null : _submitComment,
-                icon: _isCommenting
-                    ? SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white,
-                          ),
-                        ),
-                      )
-                    : const Icon(Icons.send, color: Colors.white),
-              ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: _isCommenting ? null : _submitComment,
+                  icon: _isCommenting
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.send),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.green.shade700,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ],
             ),
           ],
         ),

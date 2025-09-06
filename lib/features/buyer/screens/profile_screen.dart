@@ -1,5 +1,3 @@
-// lib/buyer/screens/profile_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../auth/services/auth_service.dart'; // Sesuaikan path import ini
@@ -10,6 +8,12 @@ class ProfileScreen extends StatelessWidget {
 
   ProfileScreen({super.key, required this.userData});
 
+  // Warna tema yang konsisten dengan PembeliDashboard
+  static const Color primaryColor = Color(0xFF10B981);
+  static const Color secondaryColor = Color(0xFF14B8A6);
+  static const Color darkColor = Color(0xFF047857);
+  static const Color ultraLightColor = Color(0xFFECFDF5);
+
   @override
   Widget build(BuildContext context) {
     // Mengambil inisial nama untuk ditampilkan jika tidak ada foto profil
@@ -17,13 +21,11 @@ class ProfileScreen extends StatelessWidget {
     final String initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
 
     return Scaffold(
-      // Menggunakan warna background yang lebih lembut
-      backgroundColor: Colors.grey[100],
-      // Menghilangkan AppBar bawaan untuk header custom
+      backgroundColor: ultraLightColor,
       appBar: AppBar(
         toolbarHeight: 0,
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: Colors.blue.shade800,
+          statusBarColor: primaryColor,
           statusBarIconBrightness: Brightness.light,
         ),
       ),
@@ -42,7 +44,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // Widget untuk membuat header profil
+  // Widget untuk membuat header profil dengan gaya PembeliDashboard
   Widget _buildProfileHeader(
     BuildContext context,
     String name,
@@ -52,7 +54,7 @@ class ProfileScreen extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 30, 20, 70),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.blue.shade800, Colors.blue.shade500],
+          colors: [primaryColor, secondaryColor, Colors.teal.shade600],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -60,21 +62,28 @@ class ProfileScreen extends StatelessWidget {
           bottomLeft: Radius.circular(30),
           bottomRight: Radius.circular(30),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: primaryColor.withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: [
           CircleAvatar(
-            radius: 55,
+            radius: 60,
             backgroundColor: Colors.white.withOpacity(0.9),
             child: CircleAvatar(
-              radius: 50,
-              backgroundColor: Colors.blue.shade100,
+              radius: 55,
+              backgroundColor: ultraLightColor,
               child: Text(
                 initial,
                 style: TextStyle(
-                  fontSize: 48,
+                  fontSize: 50,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue.shade800,
+                  color: darkColor,
                 ),
               ),
             ),
@@ -83,9 +92,10 @@ class ProfileScreen extends StatelessWidget {
           Text(
             name,
             style: const TextStyle(
-              fontSize: 24,
+              fontSize: 26,
               fontWeight: FontWeight.bold,
               color: Colors.white,
+              shadows: [Shadow(blurRadius: 4, color: Colors.black54)],
             ),
           ),
           Text(
@@ -106,27 +116,37 @@ class ProfileScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Card(
         elevation: 4,
-        shadowColor: Colors.grey.withOpacity(0.2),
+        shadowColor: darkColor.withOpacity(0.2),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        child: Column(
-          children: [
-            _buildInfoTile(
-              icon: Icons.person_outline,
-              label: 'Nama Lengkap',
-              value: userData['name'] ?? 'Tidak tersedia',
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.white, ultraLightColor],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
-            _buildInfoTile(
-              icon: Icons.email_outlined,
-              label: 'Email',
-              value: userData['email'] ?? 'Tidak tersedia',
-            ),
-            _buildInfoTile(
-              icon: Icons.phone_outlined,
-              label: 'Nomor Telepon',
-              value: userData['phoneNumber'] ?? 'Belum ditambahkan',
-              isLast: true,
-            ),
-          ],
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Column(
+            children: [
+              _buildInfoTile(
+                icon: Icons.person_outline,
+                label: 'Nama Lengkap',
+                value: userData['name'] ?? 'Tidak tersedia',
+              ),
+              _buildInfoTile(
+                icon: Icons.email_outlined,
+                label: 'Email',
+                value: userData['email'] ?? 'Tidak tersedia',
+              ),
+              _buildInfoTile(
+                icon: Icons.phone_outlined,
+                label: 'Nomor Telepon',
+                value: userData['phoneNumber'] ?? 'Belum ditambahkan',
+                isLast: true,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -138,48 +158,55 @@ class ProfileScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Card(
         elevation: 4,
-        shadowColor: Colors.grey.withOpacity(0.2),
+        shadowColor: darkColor.withOpacity(0.2),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        child: Column(
-          children: [
-            _buildActionTile(
-              context: context,
-              icon: Icons.edit_outlined,
-              title: 'Edit Profil',
-              onTap: () {
-                // TODO: Tambahkan navigasi ke halaman edit profil
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Fitur ini belum tersedia')),
-                );
-              },
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.white, ultraLightColor],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
-            _buildActionTile(
-              context: context,
-              icon: Icons.settings_outlined,
-              title: 'Pengaturan',
-              onTap: () {
-                // TODO: Tambahkan navigasi ke halaman pengaturan
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Fitur ini belum tersedia')),
-                );
-              },
-            ),
-            _buildActionTile(
-              context: context,
-              icon: Icons.logout,
-              title: 'Logout',
-              color: Colors.red.shade700,
-              onTap: () async {
-                await _authService.signOut();
-                // Kembali ke halaman login dan hapus semua rute sebelumnya
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                  '/login',
-                  (Route<dynamic> route) => false,
-                );
-              },
-              isLast: true,
-            ),
-          ],
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Column(
+            children: [
+              _buildActionTile(
+                context: context,
+                icon: Icons.edit_outlined,
+                title: 'Edit Profil',
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Fitur ini belum tersedia')),
+                  );
+                },
+              ),
+              _buildActionTile(
+                context: context,
+                icon: Icons.settings_outlined,
+                title: 'Pengaturan',
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Fitur ini belum tersedia')),
+                  );
+                },
+              ),
+              _buildActionTile(
+                context: context,
+                icon: Icons.logout,
+                title: 'Logout',
+                color: Colors.red.shade700,
+                onTap: () async {
+                  await _authService.signOut();
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/login',
+                    (Route<dynamic> route) => false,
+                  );
+                },
+                isLast: true,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -193,32 +220,46 @@ class ProfileScreen extends StatelessWidget {
     bool isLast = false,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         border: isLast
             ? null
-            : Border(bottom: BorderSide(color: Colors.grey.shade200)),
+            : Border(bottom: BorderSide(color: Colors.grey.shade100)),
       ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.blue.shade700),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: primaryColor.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: primaryColor, size: 24),
+          ),
           const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: darkColor,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -245,30 +286,44 @@ class ProfileScreen extends StatelessWidget {
               )
             : null,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           decoration: BoxDecoration(
             border: isLast
                 ? null
-                : Border(bottom: BorderSide(color: Colors.grey.shade200)),
+                : Border(bottom: BorderSide(color: Colors.grey.shade100)),
           ),
           child: Row(
             children: [
-              Icon(icon, color: color ?? Theme.of(context).primaryColor),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: (color ?? primaryColor).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color ?? primaryColor, size: 24),
+              ),
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
                   title,
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: color,
+                    fontWeight: FontWeight.w600,
+                    color: color ?? darkColor,
                   ),
                 ),
               ),
-              Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: color ?? Colors.grey.shade400,
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: (color ?? primaryColor).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: color ?? primaryColor,
+                ),
               ),
             ],
           ),

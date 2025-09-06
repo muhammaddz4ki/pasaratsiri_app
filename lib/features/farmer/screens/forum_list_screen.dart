@@ -1,7 +1,6 @@
 // lib/features/farmer/screens/forum_list_screen.dart
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:pasaratsiri_app/features/farmer/models/post_model.dart';
 import 'package:pasaratsiri_app/features/farmer/services/farmer_service.dart';
 import 'add_post_screen.dart';
@@ -9,7 +8,6 @@ import 'forum_detail_screen.dart';
 
 class ForumListScreen extends StatefulWidget {
   const ForumListScreen({super.key});
-
   @override
   State<ForumListScreen> createState() => _ForumListScreenState();
 }
@@ -37,11 +35,7 @@ class _ForumListScreenState extends State<ForumListScreen> {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF047857), // Emerald-700
-                Color(0xFF10B981), // Emerald-500
-                Color(0xFF14B8A6), // Teal-500
-              ],
+              colors: [Color(0xFF047857), Color(0xFF10B981), Color(0xFF14B8A6)],
             ),
           ),
         ),
@@ -50,142 +44,21 @@ class _ForumListScreenState extends State<ForumListScreen> {
       body: StreamBuilder<List<PostModel>>(
         stream: _farmerService.getPostsStream(),
         builder: (context, snapshot) {
-          // 1. Tampilan ketika data sedang dimuat
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          const Color(0xFF10B981).withOpacity(0.1),
-                          const Color(0xFF14B8A6).withOpacity(0.1),
-                        ],
-                      ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const SizedBox(
-                      width: 40,
-                      height: 40,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 3,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          Color(0xFF10B981),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Memuat diskusi...',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
-          // 2. Tampilan jika terjadi error
           if (snapshot.hasError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(32),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFEE2E2).withOpacity(0.5),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.error_outline_rounded,
-                      size: 48,
-                      color: Colors.red.shade600,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Terjadi Kesalahan',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Text(
-                      'Gagal memuat forum diskusi',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
+            return Center(child: Text('Terjadi kesalahan: ${snapshot.error}'));
           }
-          // 3. Tampilan jika tidak ada data sama sekali
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(32),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          const Color(0xFF10B981).withOpacity(0.1),
-                          const Color(0xFF14B8A6).withOpacity(0.1),
-                        ],
-                      ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.forum_outlined,
-                      size: 64,
-                      color: const Color(0xFF10B981).withOpacity(0.7),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Belum Ada Diskusi',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 40),
-                    child: Text(
-                      'Jadilah yang pertama memulai diskusi!\nBagikan pengalaman atau ajukan pertanyaan.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                ],
+            return const Center(
+              child: Text(
+                'Belum ada postingan.',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
             );
           }
 
-          // 4. Tampilan utama jika data berhasil didapatkan
           final posts = snapshot.data!;
           return ListView.builder(
             padding: const EdgeInsets.all(16.0),
@@ -196,182 +69,208 @@ class _ForumListScreenState extends State<ForumListScreen> {
           );
         },
       ),
-      floatingActionButton: Container(
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF10B981), Color(0xFF14B8A6)],
-          ),
-          borderRadius: BorderRadius.circular(25),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF10B981).withOpacity(0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const AddPostScreen()),
-            );
-          },
-          backgroundColor: Colors.transparent,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          child: const Icon(Icons.add, size: 28),
-          tooltip: 'Buat Postingan Baru',
-        ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddPostScreen()),
+          );
+        },
+        backgroundColor: Colors.green.shade700,
+        foregroundColor: Colors.white,
+        child: const Icon(Icons.add),
       ),
     );
   }
 
-  // Widget untuk menampilkan satu kartu postingan
   Widget _buildPostCard(PostModel post) {
-    return Container(
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final bool isLikedByMe =
+        currentUser != null && post.likes.contains(currentUser.uid);
+
+    return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Color(0xFFECFDF5)],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF10B981).withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        border: Border.all(
-          color: const Color(0xFFD1FAE5).withOpacity(0.5),
-          width: 1,
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ForumDetailScreen(post: post),
-              ),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Baris atas: Kategori dan Jumlah Komentar
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      elevation: 4,
+      shadowColor: Colors.black.withOpacity(0.1),
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ForumDetailScreen(postId: post.id),
+            ),
+          );
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (post.imageUrl != null && post.imageUrl!.isNotEmpty)
+              Container(
+                height: 200,
+                child: Stack(
+                  fit: StackFit.expand,
                   children: [
+                    Image.network(
+                      post.imageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey[300],
+                          child: Icon(
+                            Icons.broken_image,
+                            color: Colors.grey[500],
+                            size: 50,
+                          ),
+                        );
+                      },
+                    ),
+                    // --- PERBAIKAN GRADIENT ---
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: const Color(0xFF10B981).withOpacity(0.2),
-                          width: 1,
-                        ),
-                      ),
-                      child: Text(
-                        post.category,
-                        style: const TextStyle(
-                          color: Color(0xFF047857),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                          letterSpacing: 0.5,
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.black.withOpacity(
+                              0.7,
+                            ), // Lebih gelap di atas
+                            Colors.transparent,
+                            Colors.black.withOpacity(
+                              0.8,
+                            ), // Lebih gelap di bawah
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          stops: const [0.0, 0.5, 1.0],
                         ),
                       ),
                     ),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.comment_outlined,
-                          size: 16,
-                          color: Colors.grey.shade600,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          post.commentCount.toString(),
-                          style: TextStyle(
-                            color: Colors.grey.shade700,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                    Positioned(
+                      bottom: 20,
+                      left: 20,
+                      right: 20,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            post.title,
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white, // Teks putih
+                              shadows: [
+                                Shadow(blurRadius: 10.0, color: Colors.black54),
+                              ],
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          Text(
+                            post.content,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.white70, // Sedikit transparan
+                              shadows: [
+                                Shadow(blurRadius: 8.0, color: Colors.black54),
+                              ],
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                // Judul Postingan
-                Text(
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Text(
                   post.title,
                   style: const TextStyle(
-                    fontSize: 18,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1F2937),
-                    height: 1.4,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 12),
-                // Author dan Tanggal
-                Row(
-                  children: [
-                    Icon(
-                      Icons.person_outline_rounded,
-                      size: 14,
-                      color: Colors.grey.shade600,
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        'oleh ${post.authorName}',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+              ),
+
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+              child: Row(
+                children: [
+                  InkWell(
+                    onTap: () => _farmerService.togglePostLike(post.id),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4.0,
+                        vertical: 2.0,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            isLikedByMe
+                                ? Icons.thumb_up
+                                : Icons.thumb_up_outlined,
+                            size: 16,
+                            color: isLikedByMe
+                                ? Colors.blue.shade700
+                                : Colors.grey.shade600,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${post.likeCount} Suka',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey.shade700,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Icon(
-                      Icons.calendar_today_rounded,
-                      size: 14,
-                      color: Colors.grey.shade600,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      DateFormat('d MMM yyyy', 'id_ID').format(post.createdAt),
-                      style: TextStyle(
-                        fontSize: 13,
+                  ),
+                  const SizedBox(width: 16),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.comment_outlined,
+                        size: 16,
                         color: Colors.grey.shade600,
                       ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '${post.commentCount} Komentar',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  Expanded(
+                    child: Text(
+                      'oleh ${post.authorName}',
+                      textAlign: TextAlign.end,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade700,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
