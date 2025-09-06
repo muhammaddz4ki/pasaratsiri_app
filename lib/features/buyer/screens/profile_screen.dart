@@ -1,14 +1,19 @@
+// lib/features/buyer/screens/profile_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../auth/services/auth_service.dart'; // Sesuaikan path import ini
+import 'package:intl/intl.dart';
+import 'package:pasaratsiri_app/features/buyer/screens/point_dashboard_screen.dart';
+import 'package:pasaratsiri_app/features/buyer/services/point_service.dart';
+import '../../auth/services/auth_service.dart';
 
 class ProfileScreen extends StatelessWidget {
   final Map<String, dynamic> userData;
   final AuthService _authService = AuthService();
+  final PointService _pointService = PointService();
 
   ProfileScreen({super.key, required this.userData});
 
-  // Warna tema yang konsisten dengan PembeliDashboard
   static const Color primaryColor = Color(0xFF10B981);
   static const Color secondaryColor = Color(0xFF14B8A6);
   static const Color darkColor = Color(0xFF047857);
@@ -16,7 +21,6 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Mengambil inisial nama untuk ditampilkan jika tidak ada foto profil
     final String name = userData['name'] ?? 'Pengguna';
     final String initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
 
@@ -24,7 +28,7 @@ class ProfileScreen extends StatelessWidget {
       backgroundColor: ultraLightColor,
       appBar: AppBar(
         toolbarHeight: 0,
-        systemOverlayStyle: SystemUiOverlayStyle(
+        systemOverlayStyle: const SystemUiOverlayStyle(
           statusBarColor: primaryColor,
           statusBarIconBrightness: Brightness.light,
         ),
@@ -33,6 +37,9 @@ class ProfileScreen extends StatelessWidget {
         child: Column(
           children: [
             _buildProfileHeader(context, name, initial),
+            const SizedBox(height: 20),
+            // --- KARTU POIN DITAMBAHKAN DI SINI ---
+            _buildPointsCard(context),
             const SizedBox(height: 20),
             _buildInfoCard(context),
             const SizedBox(height: 20),
@@ -44,13 +51,98 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // Widget untuk membuat header profil dengan gaya PembeliDashboard
+  Widget _buildPointsCard(BuildContext context) {
+    final NumberFormat pointFormat = NumberFormat.decimalPattern('id_ID');
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Card(
+        elevation: 4,
+        shadowColor: darkColor.withOpacity(0.2),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const PointDashboardScreen(),
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(15),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.white, ultraLightColor.withOpacity(0.5)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.star_rounded, color: Colors.orange, size: 30),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Poin Saya',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: darkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      StreamBuilder<int>(
+                        stream: _pointService.getUserPointsStream(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Text(
+                              'Memuat...',
+                              style: TextStyle(fontSize: 14),
+                            );
+                          }
+                          final points = snapshot.data ?? 0;
+                          return Text(
+                            pointFormat.format(points),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.black87,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const Text(
+                  'Lihat >',
+                  style: TextStyle(
+                    color: primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildProfileHeader(
     BuildContext context,
     String name,
     String initial,
   ) {
     return Container(
+      // ... (kode header tidak berubah)
       padding: const EdgeInsets.fromLTRB(20, 30, 20, 70),
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -80,7 +172,7 @@ class ProfileScreen extends StatelessWidget {
               backgroundColor: ultraLightColor,
               child: Text(
                 initial,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 50,
                   fontWeight: FontWeight.bold,
                   color: darkColor,
@@ -110,9 +202,9 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // Widget untuk membuat kartu informasi pengguna
   Widget _buildInfoCard(BuildContext context) {
     return Padding(
+      // ... (kode info card tidak berubah)
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Card(
         elevation: 4,
@@ -152,9 +244,9 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // Widget untuk membuat kartu menu aksi
   Widget _buildActionsCard(BuildContext context) {
     return Padding(
+      // ... (kode actions card tidak berubah)
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Card(
         elevation: 4,
@@ -212,7 +304,6 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // Helper widget untuk satu baris informasi (icon, label, value)
   Widget _buildInfoTile({
     required IconData icon,
     required String label,
@@ -220,6 +311,7 @@ class ProfileScreen extends StatelessWidget {
     bool isLast = false,
   }) {
     return Container(
+      // ... (kode helper tidak berubah)
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         border: isLast
@@ -266,7 +358,6 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // Helper widget untuk satu baris aksi (icon, title, arrow)
   Widget _buildActionTile({
     required BuildContext context,
     required IconData icon,
@@ -276,6 +367,7 @@ class ProfileScreen extends StatelessWidget {
     bool isLast = false,
   }) {
     return Material(
+      // ... (kode helper tidak berubah)
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,

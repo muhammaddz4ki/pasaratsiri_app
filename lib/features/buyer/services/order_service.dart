@@ -1,15 +1,23 @@
+// lib/features/buyer/services/order_service.dart
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:pasaratsiri_app/features/buyer/services/point_service.dart';
 
 class OrderService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final PointService _pointService = PointService();
 
   Future<String?> createOrder({
     required String address,
-    required double totalPrice,
+    required double totalPrice, // Ini adalah harga FINAL setelah diskon
     required String paymentMethod,
+    // Parameter baru untuk voucher
+    String? appliedVoucherId,
+    double? discountAmount,
+    String? voucherTitle,
   }) async {
     try {
       User? currentUser = _auth.currentUser;
@@ -26,43 +34,55 @@ class OrderService {
       List<String> sellerIds = [];
       List<Map<String, dynamic>> orderItems = [];
 
-      // --- PERUBAHAN DI SINI ---
-      // Kita ambil dan simpan sellerId untuk setiap item
       for (var doc in cartSnapshot.docs) {
         DocumentSnapshot productDoc = await _firestore
             .collection('products')
             .doc(doc.id)
             .get();
-
-        String? sellerId; // Variabel untuk menyimpan sellerId per item
+        String? sellerId;
         if (productDoc.exists) {
           sellerId = (productDoc.data() as Map<String, dynamic>)['sellerId'];
           if (sellerId != null && !sellerIds.contains(sellerId)) {
             sellerIds.add(sellerId);
           }
         }
-
         orderItems.add({
           'productId': doc.id,
           'productName': doc.data()['productName'],
           'price': doc.data()['price'],
           'quantity': doc.data()['quantity'],
-          'sellerId': sellerId, // <-- FIELD PENTING DITAMBAHKAN
+          'sellerId': sellerId,
         });
       }
-      // --- AKHIR PERUBAHAN ---
 
       DocumentReference orderDoc = await _firestore.collection('orders').add({
         'userId': currentUser.uid,
         'userName': currentUser.displayName ?? 'N/A',
         'shippingAddress': address,
-        'items': orderItems, // list items sekarang sudah berisi sellerId
-        'totalPrice': totalPrice,
-        'status': 'Menunggu Pembayaran',
+        'items': orderItems,
+        'totalPrice': totalPrice, // Simpan harga final
         'paymentMethod': paymentMethod,
         'createdAt': Timestamp.now(),
         'sellerIds': sellerIds,
+        'status':
+            'Menunggu Pembayaran', // <-- FUNGSI STATUS AWAL DITAMBAHKAN DI SINI
+        // Simpan info diskon di pesanan
+        'discountDetails': {
+          'appliedVoucherId': appliedVoucherId,
+          'discountAmount': discountAmount,
+          'voucherTitle': voucherTitle,
+        },
       });
+
+      // Menandai voucher sebagai sudah digunakan
+      if (appliedVoucherId != null) {
+        await _firestore
+            .collection('users')
+            .doc(currentUser.uid)
+            .collection('myVouchers')
+            .doc(appliedVoucherId)
+            .update({'isUsed': true, 'usedAt': Timestamp.now()});
+      }
 
       for (var doc in cartSnapshot.docs) {
         await doc.reference.delete();
@@ -118,20 +138,28 @@ class OrderService {
     }).cast<QuerySnapshot<Map<String, dynamic>>>();
   }
 
-  // --- PERUBAHAN DI SINI ---
   Future<String?> updateOrderStatus({
     required String orderId,
     required String newStatus,
   }) async {
     try {
+      DocumentReference orderRef = _firestore.collection('orders').doc(orderId);
       Map<String, dynamic> dataToUpdate = {'status': newStatus};
 
-      // Kunci untuk analitik: tambahkan timestamp saat pesanan selesai
       if (newStatus == 'Selesai') {
         dataToUpdate['completedAt'] = Timestamp.now();
-      }
 
-      await _firestore.collection('orders').doc(orderId).update(dataToUpdate);
+        DocumentSnapshot orderDoc = await orderRef.get();
+        if (orderDoc.exists) {
+          String userId = orderDoc.get('userId');
+          await _pointService.addPoints(
+            userId: userId,
+            pointsToAdd: 100,
+            reason: 'Pesanan Selesai (ID: ${orderRef.id.substring(0, 5)})',
+          );
+        }
+      }
+      await orderRef.update(dataToUpdate);
       return null;
     } on FirebaseException catch (e) {
       return e.message ?? "Gagal memperbarui status pesanan.";

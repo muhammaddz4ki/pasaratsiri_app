@@ -60,8 +60,9 @@ class CartService {
     }
   }
 
-  // --- FUNGSI BARU: Menghapus item dari keranjang ---
-  Future<void> removeItem(String productId) async {
+  // --- FUNGSI DIPERBAIKI: Menghapus item dari keranjang ---
+  // Nama fungsi diubah dari removeItem menjadi removeItemFromCart
+  Future<void> removeItemFromCart(String productId) async {
     final cartCollection = _getCartCollection();
     if (cartCollection != null) {
       await cartCollection.doc(productId).delete();

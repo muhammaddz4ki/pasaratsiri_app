@@ -6,7 +6,7 @@ import 'package:pasaratsiri_app/features/buyer/screens/dummy_locations_screen.da
 import 'product_detail_screen.dart';
 import 'profile_screen.dart';
 import '../services/cart_service.dart';
-import 'package:intl/intl.dart'; // Added for Indonesian currency formatting
+import 'package:intl/intl.dart';
 
 class PembeliDashboard extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -75,6 +75,8 @@ class _PembeliDashboardState extends State<PembeliDashboard> {
         );
       }
     }
+    // Memaksa UI untuk refresh, terutama di halaman favorit
+    setState(() {});
   }
 
   Future<bool> _isFavorite(String productId) async {
@@ -110,8 +112,9 @@ class _PembeliDashboardState extends State<PembeliDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    // Memperbarui _pages setiap kali build dipanggil agar _buildHomeScreen mendapat _selectedCategory terbaru
+    // Memperbarui _pages setiap kali build dipanggil agar mendapat state terbaru
     _pages[2] = _buildHomeScreen();
+    _pages[3] = _buildFavoritesScreen();
 
     return Scaffold(
       appBar: _selectedIndex != 4 ? _buildAppBar() : null,
@@ -420,7 +423,6 @@ class _PembeliDashboardState extends State<PembeliDashboard> {
                 return const Center(child: CircularProgressIndicator());
               }
               if (snapshot.hasError) {
-                print(snapshot.error);
                 return Center(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -676,73 +678,86 @@ class _PembeliDashboardState extends State<PembeliDashboard> {
         .collection('users')
         .doc(userId)
         .collection('favorites')
+        .orderBy('timestamp', descending: true)
         .snapshots();
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              'Your Favorites',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-          ),
-          StreamBuilder<QuerySnapshot>(
-            stream: favoritesStream,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                return const Center(child: Text('Belum ada produk favorit.'));
-              }
-              return FutureBuilder<List<DocumentSnapshot>>(
-                future: Future.wait(
-                  snapshot.data!.docs.map((doc) async {
-                    final productId = doc['productId'];
-                    final productDoc = await FirebaseFirestore.instance
-                        .collection('products')
-                        .doc(productId)
-                        .get();
-                    return productDoc;
-                  }).toList(),
+    return StreamBuilder<QuerySnapshot>(
+      stream: favoritesStream,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(color: primaryColor),
+          );
+        }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.favorite_border, size: 80, color: Colors.grey[400]),
+                const SizedBox(height: 20),
+                const Text(
+                  'Belum Ada Favorit',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black54,
+                  ),
                 ),
-                builder: (context, productSnapshot) {
-                  if (productSnapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  final products = productSnapshot.data ?? [];
-                  if (products.isEmpty) {
-                    return const Center(
-                      child: Text('Belum ada produk favorit.'),
-                    );
-                  }
-                  return GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.75,
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 10,
-                        ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: products.length,
-                    itemBuilder: (context, index) {
-                      return _buildProductCard(products[index]);
-                    },
-                  );
-                },
+                const SizedBox(height: 8),
+                Text(
+                  'Produk yang kamu sukai akan muncul di sini.',
+                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                ),
+              ],
+            ),
+          );
+        }
+
+        final favoriteProductIds = snapshot.data!.docs
+            .map((doc) => doc.id)
+            .toList();
+
+        if (favoriteProductIds.isEmpty) {
+          return const Center(child: Text('Tidak ada produk favorit.'));
+        }
+
+        return FutureBuilder<QuerySnapshot>(
+          future: FirebaseFirestore.instance
+              .collection('products')
+              .where(FieldPath.documentId, whereIn: favoriteProductIds)
+              .get(),
+          builder: (context, productSnapshot) {
+            if (productSnapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(color: primaryColor),
               );
-            },
-          ),
-          const SizedBox(height: 20),
-        ],
-      ),
+            }
+            if (!productSnapshot.hasData ||
+                productSnapshot.data!.docs.isEmpty) {
+              return const Center(
+                child: Text('Produk favorit tidak ditemukan.'),
+              );
+            }
+
+            final products = productSnapshot.data!.docs;
+
+            return GridView.builder(
+              padding: const EdgeInsets.all(16.0),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.75,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
+              itemCount: products.length,
+              itemBuilder: (context, index) {
+                return _buildProductCard(products[index]);
+              },
+            );
+          },
+        );
+      },
     );
   }
 }
