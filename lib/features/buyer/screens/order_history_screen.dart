@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:pasaratsiri_app/features/buyer/screens/add_review_screen.dart';
-import 'package:pasaratsiri_app/features/shared/services/review_service.dart'; // <-- Pastikan import ini ada
+import 'package:pasaratsiri_app/features/buyer/screens/add_review_screen.dart'; // Import halaman review
 import '../services/order_service.dart';
 import 'order_detail_screen.dart';
 
@@ -15,8 +14,6 @@ class OrderHistoryScreen extends StatefulWidget {
 
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   final OrderService _orderService = OrderService();
-  final ReviewService _reviewService =
-      ReviewService(); // <-- Tambahkan instance ReviewService
   final NumberFormat _currencyFormat = NumberFormat.currency(
     locale: 'id_ID',
     symbol: 'Rp ',
@@ -33,6 +30,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     'Dibatalkan',
   ];
 
+  // Warna konsisten dari dashboard
   static const Color primaryColor = Color(0xFF10B981);
   static const Color darkColor = Color(0xFF047857);
 
@@ -186,7 +184,6 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,64 +205,29 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                     ),
                   ],
                 ),
-                // --- INI BAGIAN YANG DIPERBARUI ---
+                // --- PERUBAHAN DI SINI ---
                 if (status == 'Selesai' && items.isNotEmpty)
-                  FutureBuilder<bool>(
-                    future: _reviewService.hasUserReviewedOrder(doc.id),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        );
-                      }
-
-                      final bool hasReviewed = snapshot.data ?? false;
-
-                      if (hasReviewed) {
-                        // Jika sudah direview, tampilkan Chip non-aktif
-                        return Chip(
-                          avatar: Icon(
-                            Icons.check_circle,
-                            color: Colors.grey.shade600,
-                            size: 16,
+                  OutlinedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AddReviewScreen(
+                            // Hanya ulas produk pertama dari pesanan
+                            productId: items.first['productId'],
+                            orderId: doc.id,
                           ),
-                          label: Text(
-                            'Ulasan Dikirim',
-                            style: TextStyle(color: Colors.grey.shade700),
-                          ),
-                          backgroundColor: Colors.grey.shade200,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                        );
-                      } else {
-                        // Jika belum, tampilkan tombol "Beri Ulasan"
-                        return OutlinedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => AddReviewScreen(
-                                  productId: items.first['productId'],
-                                  orderId: doc.id,
-                                ),
-                              ),
-                            );
-                          },
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: primaryColor,
-                            side: const BorderSide(color: primaryColor),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                          child: const Text('Beri Ulasan'),
-                        );
-                      }
+                        ),
+                      );
                     },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: primaryColor,
+                      side: const BorderSide(color: primaryColor),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: const Text('Beri Ulasan'),
                   ),
               ],
             ),

@@ -554,7 +554,7 @@ class _TrainingManagementScreenState extends State<TrainingManagementScreen>
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Row(
             children: [
               Expanded(
@@ -1668,6 +1668,9 @@ class _TrainingManagementScreenState extends State<TrainingManagementScreen>
       ),
       child: DropdownButtonFormField<String>(
         value: value,
+        // --- PERBAIKAN 1 ---
+        // isExpanded membuat widget menggunakan seluruh ruang horizontal yang tersedia.
+        isExpanded: true,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Container(
@@ -1689,7 +1692,12 @@ class _TrainingManagementScreenState extends State<TrainingManagementScreen>
         items: items.map((String category) {
           return DropdownMenuItem<String>(
             value: category,
-            child: Text(category),
+            child: Text(
+              category,
+              // --- PERBAIKAN 2 ---
+              // Menambahkan ellipsis (...) jika teks terlalu panjang.
+              overflow: TextOverflow.ellipsis,
+            ),
           );
         }).toList(),
         onChanged: onChanged,

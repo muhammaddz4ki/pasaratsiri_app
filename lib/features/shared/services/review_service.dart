@@ -65,7 +65,6 @@ class ReviewService {
         // A. Simpan dokumen ulasan yang baru di dalam transaksi
         transaction.set(reviewRef, {
           'productId': productId,
-          'orderId': orderId, // Simpan orderId di dalam review
           'userId': currentUser.uid,
           'userName': currentUser.displayName ?? 'Pembeli',
           'rating': rating,
@@ -95,32 +94,6 @@ class ReviewService {
     } catch (e) {
       // Menangkap error dari dalam transaksi (misal: ulasan sudah ada)
       return e.toString().replaceFirst("Exception: ", "");
-    }
-  }
-
-  // --- FUNGSI BARU YANG DITAMBAHKAN ---
-  /// Mengecek apakah sebuah orderId sudah pernah direview oleh pengguna.
-  /// Menggunakan collectionGroup untuk mencari di semua sub-koleksi 'reviews'.
-  Future<bool> hasUserReviewedOrder(String orderId) async {
-    try {
-      User? currentUser = _auth.currentUser;
-      if (currentUser == null)
-        return true; // Anggap sudah review jika tidak login
-
-      // Mencari di semua koleksi 'reviews'
-      final querySnapshot = await _firestore
-          .collectionGroup('reviews')
-          .where('userId', isEqualTo: currentUser.uid)
-          .where('orderId', isEqualTo: orderId)
-          .limit(1)
-          .get();
-
-      // Jika ditemukan dokumen (walaupun cuma 1), berarti sudah pernah review
-      return querySnapshot.docs.isNotEmpty;
-    } catch (e) {
-      print('Error checking review status: $e');
-      // Anggap sudah review jika terjadi error untuk mencegah duplikasi/spam
-      return true;
     }
   }
 }
