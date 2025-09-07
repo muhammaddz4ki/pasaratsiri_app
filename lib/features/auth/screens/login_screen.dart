@@ -19,8 +19,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final List<String> _backgroundImages = [
     'assets/images/bg_1.png',
-    'assets/images/background2.png',
-    'assets/images/background3.png',
+    'assets/images/bg_2.png',
+    'assets/images/bg_3.png',
   ];
   int _currentImageIndex = 0;
   Timer? _timer;
