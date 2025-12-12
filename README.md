@@ -40,5 +40,5 @@ Industri minyak atsiri Garut menyumbang 90% produksi nasional, namun petani diru
 
 ## 📞 Contact
 **Muhammad Dzaki**
-* [LinkedIn](link_linkedin_kamu)
+* [LinkedIn]www.linkedin.com/in/muhammad-dzaki-931148313
 * [Portfolio Website](https://muhammad-dzaki.vercel.app/)
