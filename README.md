@@ -15,7 +15,7 @@ Jangan cuma baca kodenya, coba langsung aplikasinya di sini:
 ## 📂 Ecosystem Repositories
 Project ini adalah bagian dari sistem besar yang terdiri dari Mobile App dan Admin Dashboard.
 * **Mobile/Client App:** [You are here]
-* **Admin Dashboard (Pemerintah/Koperasi):** [Link ke Repo admin-dashboard-pasar-asitri kamu]
+* **Admin Dashboard (Pemerintah/Koperasi):** https://github.com/muhammaddz4ki/admin-dashboard-pasar-asitri
 
 ---
 
@@ -37,11 +37,6 @@ Industri minyak atsiri Garut menyumbang 90% produksi nasional, namun petani diru
 * **State Management:** [Misal: Provider / Redux]
 * **Integration:** Firebase Auth, Google Maps API.
 
-## 📸 Screenshots
-| Halaman Utama | Marketplace | Detail Produk |
-|:---:|:---:|:---:|
-| <img src="link_screenshot_1" width="200"> | <img src="link_screenshot_2" width="200"> | <img src="link_screenshot_3" width="200"> |
-*(Upload screenshot aplikasimu ke folder 'assets' di repo atau pakai link gambar, lalu tempel di sini)*
 
 ## 📞 Contact
 **Muhammad Dzaki**
