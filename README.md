@@ -1,50 +1,49 @@
-# Pasar Atsiri - Garut Essential Oil Ecosystem 🌿
+# Pasar Atsiri - Supply Chain Ecosystem 🌿
 
-![Pasar Atsiri Banner](link_ke_screenshot_poster_atau_dashboard)
+> **Platform E-Government terintegrasi untuk memutus rantai tengkulak dan menstabilkan harga minyak atsiri di Garut.**
 
-> **Platform E-Government terintegrasi yang memutus rantai tengkulak dan menstabilkan harga minyak atsiri melalui digitalisasi rantai pasok.**
+---
 
-## 💡 The Problem
-Industri minyak atsiri di Garut menyumbang 90% produksi nasional, namun petani masih sengsara karena:
-* **Dominasi Tengkulak:** 65% petani tidak punya akses pasar langsung.
-* **Fluktuasi Harga Ekstrem:** Harga bisa anjlok hingga 50% tanpa transparansi.
-* **Kualitas Tidak Terstandar:** Minimnya sertifikasi dan tracking kualitas produksi.
+### 🚀 Quick Access / Live Demo
+Jangan cuma baca kodenya, coba langsung aplikasinya di sini:
+## 🔗 [**Kunjungi Landing Page & Web App**](https://pasar-atsiri-app.web.app/)
 
-## 🚀 The Solution: Pasar Atsiri Ecosystem
-Aplikasi ini bukan sekadar marketplace, tapi sebuah **Sistem Manajemen Rantai Pasok (Supply Chain Management)** yang menghubungkan 4 aktor utama dalam satu platform real-time:
+*(Note: Landing page ini mencakup akses ke ekosistem Pasar Atsiri)*
 
-1.  **Petani:** Marketplace langsung, catat panen, dan info cuaca.
-2.  **Penyuling (Refiners):** Manajemen stok, input hasil penyulingan, dan uji mutu lab.
-3.  **Pembeli (Buyers):** Transaksi aman dengan produk bersertifikat.
-4.  **Pemerintah (Admin Dashboard):** Monitoring harga real-time, penyaluran subsidi, dan validasi sertifikasi digital.
+---
 
-## ✨ Key Features
+## 📂 Ecosystem Repositories
+Project ini adalah bagian dari sistem besar yang terdiri dari Mobile App dan Admin Dashboard.
+* **Mobile/Client App:** [You are here]
+* **Admin Dashboard (Pemerintah/Koperasi):** [Link ke Repo admin-dashboard-pasar-asitri kamu]
 
-### 📱 Mobile App (Petani & Penyuling)
-* **Direct Marketplace:** Jual beli langsung tanpa perantara.
-* **Digital Certification:** Pengajuan dan verifikasi sertifikat mutu produk secara online.
-* **Smart Farming Tools:** Pencatatan panen, pantau cuaca, dan forum diskusi komunitas.
-* **Production Tracking:** Input data bahan baku hingga hasil minyak (Yield Analysis).
+---
 
-### 💻 Web Admin Dashboard (Pemerintah)
-* **Real-time Price Monitoring:** Dashboard analitik untuk memantau fluktuasi harga pasar.
-* **Subsidy Management:** Penyaluran dan pelacakan bantuan pemerintah tepat sasaran.
-* **User Verification:** KYC (Know Your Customer) untuk petani dan penyuling.
-* **Data Analytics:** Laporan statistik produksi dan distribusi daerah.
+## 💡 The Context
+Industri minyak atsiri Garut menyumbang 90% produksi nasional, namun petani dirugikan oleh permainan harga tengkulak. **Pasar Atsiri App** hadir sebagai solusi digital untuk:
+1.  **Transparansi Harga:** Petani melihat harga pasar real-time.
+2.  **Direct Trading:** Menghubungkan Petani langsung ke Penyuling & Pembeli.
+3.  **Digital Certification:** Menjamin kualitas minyak dengan tracking digital.
+
+## ✨ Key Features (Mobile/Web Client)
+* **Marketplace Real-time:** Jual beli komoditas dengan harga transparan.
+* **Smart Farming:** Fitur pencatatan panen dan prediksi cuaca untuk petani.
+* **Discussion Forum:** Komunitas antar petani dan ahli penyulingan.
+* **QR Code Tracking:** Pelacakan asal-usul minyak (Traceability).
 
 ## 🛠 Tech Stack
-**Infrastructure:**
-* **Cloud Platform:** Google Cloud Platform (GCP)
-* **Database:** Firebase Realtime Database & Cloud Firestore (untuk sinkronisasi data real-time antar aktor)
-* **Hosting:** Firebase Hosting
+* **Frontend:** [Sebutkan Frameworknya, misal: Flutter / React.js]
+* **Styling:** [Misal: Tailwind CSS / Material UI]
+* **State Management:** [Misal: Provider / Redux]
+* **Integration:** Firebase Auth, Google Maps API.
 
-**Application:**
-* **Mobile:** [Flutter / React Native - sesuaikan dengan kodemu]
-* **Web Dashboard:** [React.js / Vue.js / Laravel - sesuaikan]
-
-## 🏗 System Architecture
-Platform ini menggunakan arsitektur *event-driven* di mana data panen dari petani langsung mempengaruhi data stok di dashboard penyuling dan statistik di dashboard pemerintah secara *real-time*.
+## 📸 Screenshots
+| Halaman Utama | Marketplace | Detail Produk |
+|:---:|:---:|:---:|
+| <img src="link_screenshot_1" width="200"> | <img src="link_screenshot_2" width="200"> | <img src="link_screenshot_3" width="200"> |
+*(Upload screenshot aplikasimu ke folder 'assets' di repo atau pakai link gambar, lalu tempel di sini)*
 
 ## 📞 Contact
-**Muhammad Dzaki** - Backend Developer
-*Email: [muhammadikazd@gmail.com]*
+**Muhammad Dzaki**
+* [LinkedIn](link_linkedin_kamu)
+* [Portfolio Website](https://muhammad-dzaki.vercel.app/)
